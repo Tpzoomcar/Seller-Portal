@@ -1,0 +1,976 @@
+<!DOCTYPE html>
+<html lang="th" class="h-full bg-[#f5f5f7] text-[#1d1d1f] antialiased">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TPZ COOMCAR — Gemini AI Vehicle Extractor & Supabase Flow</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Supabase JS Client v2 -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Google Font: Anuphan -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anuphan:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'apple-blue': '#0066cc',
+                        'apple-blue-focus': '#0071e3',
+                        'apple-blue-dark': '#2997ff',
+                        'apple-ink': '#1d1d1f',
+                        'apple-parchment': '#f5f5f7',
+                        'apple-pearl': '#fafafc',
+                        'apple-tile-1': '#272729',
+                        'apple-tile-2': '#2a2a2c',
+                        'apple-hairline': '#e0e0e0',
+                        'apple-divider': '#f0f0f0'
+                    },
+                    fontFamily: {
+                        sans: ['Anuphan', 'SF Pro Display', 'SF Pro Text', '-apple-system', 'BlinkMacSystemFont', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Apple Strict Typography Rules using Anuphan Font */
+        body {
+            font-family: 'Anuphan', 'SF Pro Text', -apple-system, sans-serif;
+        }
+        .apple-hero-title {
+            font-family: 'Anuphan', 'SF Pro Display', sans-serif;
+            font-size: 56px;
+            font-weight: 600;
+            line-height: 1.07;
+            letter-spacing: -0.28px;
+        }
+        .apple-display-lg {
+            font-size: 40px;
+            font-weight: 600;
+            line-height: 1.10;
+            letter-spacing: 0px;
+        }
+        .apple-tagline {
+            font-size: 21px;
+            font-weight: 600;
+            line-height: 1.19;
+            letter-spacing: 0.231px;
+        }
+        .apple-body {
+            font-size: 17px;
+            font-weight: 400;
+            line-height: 1.47;
+            letter-spacing: -0.374px;
+        }
+        .apple-body-strong {
+            font-size: 17px;
+            font-weight: 600;
+            line-height: 1.24;
+            letter-spacing: -0.374px;
+        }
+        .apple-caption {
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.43;
+            letter-spacing: -0.224px;
+        }
+
+        /* Apple Active Micro-Interaction */
+        .apple-active-scale {
+            transition: transform 0.15s cubic-bezier(0.2, 0, 0, 1), background-color 0.15s ease;
+        }
+        .apple-active-scale:active {
+            transform: scale(0.95);
+        }
+
+        /* Product Shadow */
+        .apple-product-shadow {
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.22);
+        }
+
+        /* Scrollbar Styling */
+        .apple-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .apple-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .apple-scrollbar::-webkit-scrollbar-thumb {
+            background: rgba(0, 0, 0, 0.15);
+            border-radius: 9999px;
+        }
+    </style>
+</head>
+<body class="bg-[#f5f5f7] text-[#1d1d1f] flex flex-col min-h-screen">
+
+    <!-- 1. Global Navigation Bar (44px Height, Pure Black) -->
+    <nav class="bg-[#000000] text-white h-[44px] px-6 flex items-center justify-between sticky top-0 z-40 text-[12px] tracking-[-0.12px]">
+        <div class="flex items-center space-x-6">
+            <span class="font-semibold tracking-tight text-white flex items-center gap-2">
+                <i class="fa-solid fa-car-side text-[#2997ff]"></i>
+                <span>TPZ COOMCAR</span>
+            </span>
+            <span class="text-[#cccccc] hidden sm:inline">AI Flow Workspaces</span>
+        </div>
+        <div class="flex items-center space-x-4">
+            <button onclick="toggleSettingsModal()" class="apple-active-scale text-[#cccccc] hover:text-white transition-colors flex items-center gap-1.5 py-1 px-3 rounded-[8px] bg-[#1d1d1f]">
+                <i class="fa-solid fa-sliders text-[#2997ff]"></i>
+                <span>การตั้งค่า API & Database</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- 2. Sub-Nav Frosted Glass Bar (52px Height, Parchment 80% opacity blur) -->
+    <header class="bg-[#f5f5f7]/80 backdrop-blur-md border-b border-[#e0e0e0] h-[52px] sticky top-[44px] z-30 px-6 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+            <h1 class="apple-tagline text-[#1d1d1f] font-semibold">Gemini Vehicle Extractor</h1>
+            <span class="text-[12px] bg-[#e0e0e0] text-[#1d1d1f] px-2.5 py-0.5 rounded-full font-medium">Gem 1</span>
+        </div>
+        <div class="flex items-center space-x-3 text-[14px]">
+            <span id="nav-status-indicator" class="text-[#7a7a7a] hidden md:inline">พร้อมประมวลผล</span>
+            <button onclick="runGeminiProcess()" class="bg-[#0066cc] hover:bg-[#0071e3] text-white px-4 py-1.5 rounded-full font-normal text-[14px] apple-active-scale">
+                ประมวลผล AI
+            </button>
+        </div>
+    </header>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-6 right-6 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <!-- 3. Apple Style Modal for Config -->
+    <div id="settings-modal" class="fixed inset-0 bg-[#000000]/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-[#e0e0e0] w-full max-w-lg rounded-[18px] p-8 shadow-2xl relative">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="apple-body-strong text-[21px] text-[#1d1d1f] flex items-center gap-2">
+                    <i class="fa-solid fa-gear text-[#0066cc]"></i> ตั้งค่าการเชื่อมต่อ API & Supabase
+                </h3>
+                <button onclick="toggleSettingsModal()" class="text-[#7a7a7a] hover:text-[#1d1d1f] w-8 h-8 rounded-full flex items-center justify-center bg-[#f5f5f7] apple-active-scale">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            
+            <p class="apple-caption text-[#7a7a7a] mb-6">ระบุ Gemini API Key และ Supabase Connection เพื่อเริ่มใช้งานระบบสกัดข้อมูล</p>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1.5">Gemini API Key</label>
+                    <input type="password" id="input-gemini-key" placeholder="AIzaSy..." class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-3 text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#0066cc]">
+                </div>
+                <div>
+                    <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1.5">Supabase Project URL</label>
+                    <input type="text" id="input-supabase-url" placeholder="https://xxxx.supabase.co" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-3 text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#0066cc]">
+                </div>
+                <div>
+                    <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1.5">Supabase Anon Key</label>
+                    <input type="password" id="input-supabase-key" placeholder="eyJhbGci..." class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-3 text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#0066cc]">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1.5">Storage Bucket Name</label>
+                        <input type="text" id="input-bucket-name" value="car-images" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-3 text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1.5">Database Table Name</label>
+                        <input type="text" id="input-table-name" value="TPZCOOMCAR" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-3 text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end space-x-3">
+                <button onclick="toggleSettingsModal()" class="px-5 py-2.5 bg-[#fafafc] border border-[#e0e0e0] rounded-full text-[14px] text-[#1d1d1f] apple-active-scale">ยกเลิก</button>
+                <button onclick="saveConfiguration()" class="px-6 py-2.5 bg-[#0066cc] text-white rounded-full text-[14px] font-normal apple-active-scale">บันทึกข้อมูล</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Main Hero Showcase Canvas (Pure White Tile) -->
+    <main class="flex-1 w-full max-w-[1440px] mx-auto">
+        
+        <section class="bg-white py-12 px-6 sm:px-12 border-b border-[#e0e0e0]">
+            <div class="max-w-4xl mx-auto text-center space-y-4">
+                <p class="text-[14px] text-[#0066cc] font-semibold tracking-wider uppercase">Product Posting</p>
+                <h1 class="apple-hero-title text-[#1d1d1f] max-sm:text-[36px]">ระบบโพสต์สินค้าอัตโนมัติ</h1>
+                <p class="apple-body text-[#7a7a7a] max-w-2xl mx-auto">
+                    วิเคราะห์ข้อมูลสเปกรถยนต์จากข้อความและรูปภาพด้วย AI Flow พร้อมจัดหมวดหมู่ภาษาไทยและบันทึกลง Supabase โดยตรง
+                </p>
+            </div>
+        </section>
+
+        <!-- 5. Workflow Grid Sections -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-0 border-b border-[#e0e0e0]">
+
+            <!-- LEFT TILE: Input Section (White Canvas) -->
+            <div class="lg:col-span-6 bg-white p-6 sm:p-10 border-r border-[#e0e0e0] flex flex-col justify-between space-y-8">
+                <div class="space-y-8">
+                    
+                    <!-- Section 1: รายละเอียดเบื้องต้น (ข้อความ + ไอคอนแนบรูปข้อมูลสเปกสไตล์ Gemini Chat) -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between border-b border-[#f0f0f0] pb-2">
+                            <h2 class="apple-body-strong text-[19px] text-[#1d1d1f] flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-full bg-[#f5f5f7] flex items-center justify-center text-[12px] text-[#0066cc] font-bold">1</span>
+                                <span>รายละเอียดเบื้องต้น (ข้อความ & ภาพข้อมูล)</span>
+                            </h2>
+                        </div>
+
+                        <!-- Gemini Interactive Chat-style Box -->
+                        <div class="bg-[#fafafc] border border-[#e0e0e0] rounded-[18px] p-4 transition-colors focus-within:border-[#0066cc] focus-within:bg-white">
+                            <label class="block apple-caption font-semibold text-[#1d1d1f] mb-2">รายละเอียดสเปกรถยนต์ (หรือพิมพ์สั้นๆ ให้ AI สรุปต่อ)</label>
+                            <textarea id="car-text-input" rows="5" placeholder="พิมพ์รายละเอียดสเปก หรือวางข้อความสั้นๆ ลงที่นี่..." 
+                                      class="w-full bg-transparent text-[14px] text-[#1d1d1f] placeholder-[#7a7a7a] focus:outline-none resize-none apple-scrollbar leading-relaxed"></textarea>
+                            
+                            <!-- Gemini-style Action Bar inside the box -->
+                            <div class="flex items-center justify-between pt-3 border-t border-[#f0f0f0] mt-2">
+                                <div class="flex items-center space-x-2">
+                                    <!-- Standard Apple Icon-only button (No text label) -->
+                                    <button type="button" title="แนบรูปสเปก/เอกสาร" onclick="document.getElementById('spec-image-input').click()" 
+                                            class="w-9 h-9 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#0066cc] flex items-center justify-center apple-active-scale transition-colors">
+                                        <i class="fa-solid fa-paperclip text-[15px]"></i>
+                                    </button>
+                                    <!-- ปุ่มคืนค่าเริ่มต้น -->
+                                    <button type="button" title="คืนค่าเริ่มต้น" onclick="resetCarTextInput()" 
+                                            class="w-9 h-9 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#7a7a7a] hover:text-[#0066cc] flex items-center justify-center apple-active-scale transition-colors">
+                                        <i class="fa-solid fa-rotate-left text-[14px]"></i>
+                                    </button>
+                                    <!-- ปุ่มล้างข้อความเพื่อเริ่มพิมพ์ใหม่ -->
+                                    <button type="button" title="ล้างข้อความ" onclick="clearCarTextInput()" 
+                                            class="w-9 h-9 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#7a7a7a] hover:text-[#ff3b30] flex items-center justify-center apple-active-scale transition-colors">
+                                        <i class="fa-solid fa-trash-can text-[14px]"></i>
+                                    </button>
+                                    <input type="file" id="spec-image-input" accept="image/*" class="hidden" onchange="handleSpecImageSelect(event)">
+                                </div>
+                                <span class="apple-caption text-[12px] text-[#7a7a7a]">แนบรูปถ่ายเอกสาร/ใบคู่มือเพื่อ AI สแกน</span>
+                            </div>
+
+                            <!-- Attached Spec Document Preview Badge -->
+                            <div id="spec-image-preview-container" class="hidden mt-3 p-2 bg-white border border-[#e0e0e0] rounded-[11px] flex items-center justify-between shadow-sm">
+                                <div class="flex items-center space-x-2.5 overflow-hidden">
+                                    <img id="spec-image-thumb" class="w-10 h-10 object-cover rounded-[8px] border border-[#e0e0e0]">
+                                    <div class="overflow-hidden">
+                                        <p id="spec-image-name" class="apple-caption font-semibold text-[#1d1d1f] truncate max-w-[180px]">spec_info.jpg</p>
+                                        <p class="apple-caption text-[11px] text-[#0066cc]">ภาพข้อมูลสเปกแนบแล้ว</p>
+                                    </div>
+                                </div>
+                                <!-- Icon-only delete button -->
+                                <button type="button" title="ลบออก" onclick="removeSpecImage()" class="w-8 h-8 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#7a7a7a] hover:text-[#ff3b30] flex items-center justify-center apple-active-scale transition-colors">
+                                    <i class="fa-solid fa-xmark text-[14px]"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Section 2: เพิ่มรูปภาพรถยนต์ทั้งหมด 15 รูป (Fixed 15 Slots Matrix) -->
+                    <div class="space-y-3">
+                        <div class="flex items-center justify-between border-b border-[#f0f0f0] pb-2">
+                            <h2 class="apple-body-strong text-[19px] text-[#1d1d1f] flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-full bg-[#f5f5f7] flex items-center justify-center text-[12px] text-[#0066cc] font-bold">2</span>
+                                <span>เพิ่มรูปภาพรถยนต์ทั้งหมด</span>
+                            </h2>
+                            <div class="flex items-center space-x-2">
+                                <span id="image-counter-badge" class="apple-caption bg-[#f5f5f7] text-[#1d1d1f] px-3 py-1 rounded-full font-medium">0 / 15 รูป</span>
+                                <!-- Icon-only add button -->
+                                <button type="button" title="เพิ่มรูปภาพ" onclick="document.getElementById('file-input').click()" class="w-8 h-8 rounded-full bg-[#0066cc] hover:bg-[#0071e3] text-white flex items-center justify-center apple-active-scale shadow-sm transition-colors">
+                                    <i class="fa-solid fa-plus text-[14px]"></i>
+                                </button>
+                                <input type="file" id="file-input" multiple accept="image/*" class="hidden" onchange="handleFileSelect(event)">
+                                <input type="file" id="single-slot-input" accept="image/*" class="hidden" onchange="handleSingleSlotSelect(event)">
+                            </div>
+                        </div>
+
+                        <p class="apple-caption text-[#7a7a7a]">ลากรูปสลับตำแหน่งข้ามช่อง 1-15 ได้อย่างอิสระ ลำดับจะถูกยึดบันทึกลง Supabase ตามเลขช่อง</p>
+
+                        <!-- 15 Fixed Slots Grid Matrix -->
+                        <div id="image-slots-grid" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4 min-h-[100px] p-1 select-none">
+                            <!-- Populated dynamically: 15 fixed slot cards -->
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Primary Action Button -->
+                <button id="btn-process-ai" onclick="runGeminiProcess()" class="w-full mt-8 bg-[#0066cc] hover:bg-[#0071e3] text-white font-normal py-3.5 px-6 rounded-full text-[17px] flex items-center justify-center space-x-2 apple-active-scale shadow-sm">
+                    <i class="fa-solid fa-wand-magic-sparkles text-[15px]"></i>
+                    <span>ประมวลผลด้วย Gemini AI</span>
+                </button>
+            </div>
+
+            <!-- RIGHT TILE: Extraction Output Canvas (Dark Surface Tile #272729) -->
+            <div class="lg:col-span-6 bg-[#272729] text-white p-6 sm:p-10 flex flex-col justify-between">
+                <div class="space-y-6">
+                    <div class="flex items-center justify-between border-b border-[#333333] pb-3">
+                        <h2 class="apple-body-strong text-[21px] text-white flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-full bg-[#333333] flex items-center justify-center text-[12px] text-[#2997ff] font-bold">3</span>
+                            <span>ผลลัพธ์การสรุปข้อมูล AI</span>
+                        </h2>
+                        <span id="ai-status-badge" class="apple-caption px-3 py-1 rounded-full bg-[#333333] text-[#cccccc]">รอการวิเคราะห์</span>
+                    </div>
+
+                    <!-- AI Loading Spinner -->
+                    <div id="ai-loading" class="hidden py-20 text-center space-y-4">
+                        <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-[#2997ff] border-t-transparent"></div>
+                        <p id="ai-loading-text" class="apple-body text-[#2997ff]">Gemini AI กำลังวิเคราะห์ข้อมูลและรูปภาพ...</p>
+                    </div>
+
+                    <!-- AI Empty State Placeholder -->
+                    <div id="ai-empty-state" class="py-24 text-center text-[#cccccc] space-y-3">
+                        <i class="fa-solid fa-microchip text-4xl text-[#7a7a7a]"></i>
+                        <p class="apple-body text-[#cccccc]">กรอกรายละเอียด แนบรูปภาพ แล้วกด "ประมวลผลด้วย Gemini AI"</p>
+                    </div>
+
+                    <!-- AI High Demand Retry State Banner -->
+                    <div id="ai-retry-card" class="hidden py-12 px-6 bg-[#2a2a2c] border border-[#ff9500]/40 rounded-[18px] text-center space-y-4">
+                        <div class="w-12 h-12 rounded-full bg-[#ff9500]/20 border border-[#ff9500]/40 flex items-center justify-center mx-auto text-[#ff9500]">
+                            <i class="fa-solid fa-clock-rotate-left text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="apple-body-strong text-white text-[18px]">เซิร์ฟเวอร์ Gemini มีผู้ใช้งานจำนวนมากชั่วคราว</h3>
+                            <p class="apple-caption text-[#cccccc] mt-1 max-w-sm mx-auto">ระบบของ Google Gemini กำลังรับโหลดสูงชั่วคราว กรุณารอประมาณ 3-5 วินาทีแล้วลองอีกครั้ง</p>
+                        </div>
+                        <button onclick="runGeminiProcess()" class="px-6 py-2.5 bg-[#0066cc] hover:bg-[#0071e3] text-white rounded-full text-[14px] font-medium apple-active-scale inline-flex items-center gap-2">
+                            <i class="fa-solid fa-rotate-right"></i>
+                            <span>ลองใหม่อีกครั้ง</span>
+                        </button>
+                    </div>
+
+                    <!-- AI Result Output Display -->
+                    <div id="ai-result-container" class="hidden space-y-4">
+                        <div class="bg-[#1d1d1f] border border-[#333333] rounded-[14px] p-5 font-mono text-[13px] text-[#ffffff] leading-relaxed whitespace-pre-wrap max-h-[380px] overflow-y-auto apple-scrollbar" id="ai-text-output"></div>
+
+                        <!-- Odometer Verified Card with Apple Product Shadow -->
+                        <div class="bg-[#2a2a2c] border border-[#333333] rounded-[14px] p-4 flex items-center justify-between apple-product-shadow">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 rounded-full bg-[#2997ff]/10 flex items-center justify-center">
+                                    <i class="fa-solid fa-gauge-high text-[#2997ff] text-lg"></i>
+                                </div>
+                                <div>
+                                    <p class="apple-caption text-[#cccccc]">เลขไมล์ที่ตรวจพบจากรูปเรือนไมล์</p>
+                                    <p id="odometer-val" class="apple-body-strong text-white text-[19px]">-</p>
+                                </div>
+                            </div>
+                            <span class="apple-caption bg-[#2997ff]/20 text-[#2997ff] px-3 py-1 rounded-full font-semibold border border-[#2997ff]/30">AI Verified</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Confirm & Save to Supabase Section -->
+                <div id="confirm-section" class="pt-6 border-t border-[#333333] mt-8 hidden">
+                    <button id="btn-save-supabase" onclick="saveToSupabaseFlow()" class="w-full bg-[#2997ff] hover:bg-[#0071e3] text-white font-normal py-3.5 px-6 rounded-full text-[17px] flex items-center justify-center space-x-2 apple-active-scale shadow-lg">
+                        <i class="fa-solid fa-cloud-arrow-up text-[15px]"></i>
+                        <span>บันทึกข้อมูลและอัปโหลดรูปภาพเข้า Supabase</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- 6. Footer Section (Apple Parchment Canvas) -->
+    <footer class="bg-[#f5f5f7] text-[#7a7a7a] py-12 px-6 sm:px-12 border-t border-[#e0e0e0] text-[12px]">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <p>Copyright © 2026 TPZ COOMCAR. Powered by Google Gemini AI & Supabase.</p>
+            <div class="flex space-x-6">
+                <a href="#" onclick="toggleSettingsModal(); return false;" class="text-[#0066cc] hover:underline">ตั้งค่าระบบ</a>
+                <span>|</span>
+                <span class="text-[#1d1d1f]">System Status: Operational</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Global Application State - Exactly 15 Fixed Slots
+        let slotFiles = new Array(15).fill(null);
+        let specImageFile = null;
+        let parsedCarData = null;
+        let draggedSlotIndex = null;
+        let targetSlotForPick = null;
+
+        // Configuration State
+        let config = {
+            geminiKey: localStorage.getItem('gemini_key') || '',
+            supabaseUrl: localStorage.getItem('supabase_url') || '',
+            supabaseKey: localStorage.getItem('supabase_key') || '',
+            bucketName: localStorage.getItem('bucket_name') || 'car-images',
+            tableName: localStorage.getItem('table_name') || 'TPZCOOMCAR'
+        };
+
+        const DEFAULT_CAR_TEXT = ``;
+
+        function resetCarTextInput() {
+            document.getElementById('car-text-input').value = '';
+            showToast("ล้างข้อความรายละเอียดสเปกเรียบร้อยแล้ว", "info");
+        }
+
+        function clearCarTextInput() {
+            document.getElementById('car-text-input').value = '';
+            showToast("ล้างข้อความเรียบร้อยแล้ว", "info");
+        }
+
+        function resetFormAfterSave() {
+            // ล้างช่องรายละเอียดสเปกรถยนต์เป็นค่าว่างพร้อมใช้งานคันต่อไป
+            document.getElementById('car-text-input').value = '';
+            
+            // ล้างรูปภาพและไฟล์สเปกที่เลือกไว้
+            removeSpecImage();
+            slotFiles = new Array(15).fill(null);
+            renderSlotsGrid();
+
+            // รีเซ็ตสถานะหน้าจอผลลัพธ์ AI
+            parsedCarData = null;
+            document.getElementById('ai-result-container').classList.add('hidden');
+            document.getElementById('confirm-section').classList.add('hidden');
+            document.getElementById('ai-empty-state').classList.remove('hidden');
+            document.getElementById('ai-status-badge').className = "apple-caption px-3 py-1 rounded-full bg-[#333333] text-[#cccccc]";
+            document.getElementById('ai-status-badge').innerText = "รอการวิเคราะห์";
+        }
+
+        window.onload = function() {
+            document.getElementById('input-gemini-key').value = config.geminiKey;
+            document.getElementById('input-supabase-url').value = config.supabaseUrl;
+            document.getElementById('input-supabase-key').value = config.supabaseKey;
+            document.getElementById('input-bucket-name').value = config.bucketName;
+            document.getElementById('input-table-name').value = config.tableName;
+
+            renderSlotsGrid();
+
+            if (!config.geminiKey || !config.supabaseUrl || !config.supabaseKey) {
+                showToast("โปรดระบุ Gemini API Key และข้อมูล Supabase ในเมนูตั้งค่าก่อนเริ่มใช้งาน", "warning");
+            }
+        };
+
+        function renderSlotsGrid() {
+            const grid = document.getElementById('image-slots-grid');
+            const counter = document.getElementById('image-counter-badge');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+            const activeCount = slotFiles.filter(f => f !== null).length;
+            counter.innerText = `${activeCount} / 15 รูป`;
+
+            for (let i = 0; i < 15; i++) {
+                const file = slotFiles[i];
+                const slotCard = document.createElement('div');
+                slotCard.className = `relative aspect-square rounded-[11px] border transition-all flex flex-col justify-between p-1.5 ${
+                    file ? 'bg-white border-[#e0e0e0] shadow-sm cursor-grab active:cursor-grabbing' : 'bg-[#fafafc] border-dashed border-[#d2d2d7] hover:border-[#0066cc]'
+                }`;
+
+                slotCard.setAttribute('data-slot-index', i);
+                slotCard.draggable = !!file;
+
+                // Drag & Drop handlers with preventDefault to avoid browser reload
+                slotCard.ondragstart = (e) => {
+                    if (!file) return;
+                    draggedSlotIndex = i;
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', i);
+                    slotCard.classList.add('opacity-40');
+                };
+
+                slotCard.ondragover = (e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    slotCard.classList.add('border-[#0066cc]', 'bg-[#0066cc]/5');
+                };
+
+                slotCard.ondragleave = () => {
+                    slotCard.classList.remove('border-[#0066cc]', 'bg-[#0066cc]/5');
+                };
+
+                slotCard.ondrop = (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    slotCard.classList.remove('border-[#0066cc]', 'bg-[#0066cc]/5');
+
+                    // Support dropping external files onto specific slot
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        const droppedFile = e.dataTransfer.files[0];
+                        if (droppedFile.type.startsWith('image/')) {
+                            slotFiles[i] = droppedFile;
+                            renderSlotsGrid();
+                        }
+                        return;
+                    }
+
+                    // Swap slot files freely
+                    if (draggedSlotIndex !== null && draggedSlotIndex !== i) {
+                        const temp = slotFiles[i];
+                        slotFiles[i] = slotFiles[draggedSlotIndex];
+                        slotFiles[draggedSlotIndex] = temp;
+                        draggedSlotIndex = null;
+                        renderSlotsGrid();
+                    }
+                };
+
+                slotCard.ondragend = () => {
+                    slotCard.classList.remove('opacity-40');
+                    draggedSlotIndex = null;
+                };
+
+                if (file) {
+                    // Slot containing image preview
+                    const reader = new FileReader();
+                    reader.onload = function(evt) {
+                        slotCard.innerHTML = `
+                            <div class="absolute top-1 left-1 z-10 bg-[#1d1d1f]/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                                ${i + 1}
+                            </div>
+                            <button type="button" title="ลบรูป" onclick="clearSlot(${i}, event)" 
+                                    class="absolute top-1 right-1 z-10 w-6 h-6 rounded-full bg-white/90 hover:bg-white text-[#ff3b30] flex items-center justify-center shadow-sm apple-active-scale transition-all">
+                                <i class="fa-solid fa-xmark text-[11px]"></i>
+                            </button>
+                            <div class="w-full h-full rounded-[8px] overflow-hidden bg-[#fafafc]">
+                                <img src="${evt.target.result}" class="w-full h-full object-cover pointer-events-none" alt="Car Image Slot ${i + 1}">
+                            </div>
+                        `;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    // Empty slot
+                    slotCard.onclick = (e) => {
+                        if (e.target.tagName.toLowerCase() === 'button' || e.target.closest('button')) return;
+                        openSingleSlotPicker(i);
+                    };
+                    slotCard.innerHTML = `
+                        <div class="w-full h-full flex flex-col items-center justify-center text-center p-1 cursor-pointer group">
+                            <span class="text-[11px] font-medium text-[#7a7a7a] group-hover:text-[#0066cc] mb-1">ช่อง ${i + 1}</span>
+                            <div class="w-7 h-7 rounded-full bg-white border border-[#e0e0e0] flex items-center justify-center text-[#7a7a7a] group-hover:text-[#0066cc] group-hover:border-[#0066cc] transition-colors shadow-xs">
+                                <i class="fa-solid fa-plus text-[11px]"></i>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                grid.appendChild(slotCard);
+            }
+        }
+
+        function openSingleSlotPicker(slotIndex) {
+            targetSlotForPick = slotIndex;
+            const input = document.getElementById('single-slot-input');
+            if (input) {
+                input.value = '';
+                input.click();
+            }
+        }
+
+        function handleSingleSlotSelect(e) {
+            const file = e.target.files[0];
+            if (file && targetSlotForPick !== null) {
+                slotFiles[targetSlotForPick] = file;
+                targetSlotForPick = null;
+                renderSlotsGrid();
+            }
+        }
+
+        function clearSlot(index, event) {
+            if (event) event.stopPropagation();
+            slotFiles[index] = null;
+            renderSlotsGrid();
+        }
+
+        function handleFileSelect(e) {
+            const files = Array.from(e.target.files);
+            if (!files.length) return;
+
+            let fileIdx = 0;
+            for (let i = 0; i < 15 && fileIdx < files.length; i++) {
+                if (slotFiles[i] === null) {
+                    slotFiles[i] = files[fileIdx];
+                    fileIdx++;
+                }
+            }
+
+            if (fileIdx < files.length) {
+                showToast("เพิ่มรูปครบ 15 ช่องแล้ว บางรูปอาจไม่ได้ถูกเพิ่ม", "warning");
+            }
+
+            renderSlotsGrid();
+            e.target.value = '';
+        }
+
+        function toggleSettingsModal() {
+            document.getElementById('settings-modal').classList.toggle('hidden');
+        }
+
+        function saveConfiguration() {
+            config.geminiKey = document.getElementById('input-gemini-key').value.trim();
+            config.supabaseUrl = document.getElementById('input-supabase-url').value.trim();
+            config.supabaseKey = document.getElementById('input-supabase-key').value.trim();
+            config.bucketName = document.getElementById('input-bucket-name').value.trim() || 'car-images';
+            config.tableName = document.getElementById('input-table-name').value.trim() || 'TPZCOOMCAR';
+
+            localStorage.setItem('gemini_key', config.geminiKey);
+            localStorage.setItem('supabase_url', config.supabaseUrl);
+            localStorage.setItem('supabase_key', config.supabaseKey);
+            localStorage.setItem('bucket_name', config.bucketName);
+            localStorage.setItem('table_name', config.tableName);
+
+            toggleSettingsModal();
+            showToast("บันทึกการตั้งค่าเรียบร้อยแล้ว", "success");
+        }
+
+        function handleSpecImageSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            specImageFile = file;
+            const reader = new FileReader();
+            reader.onload = function(evt) {
+                document.getElementById('spec-image-thumb').src = evt.target.result;
+                document.getElementById('spec-image-name').innerText = file.name;
+                document.getElementById('spec-image-preview-container').classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function removeSpecImage() {
+            specImageFile = null;
+            document.getElementById('spec-image-input').value = '';
+            document.getElementById('spec-image-preview-container').classList.add('hidden');
+        }
+
+        function fileToBase64Part(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve({
+                    inlineData: {
+                        data: reader.result.split(',')[1],
+                        mimeType: file.type
+                    }
+                });
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        async function runGeminiProcess() {
+            if (!config.geminiKey) {
+                showToast("กรุณาระบุ Gemini API Key ในเมนูตั้งค่าก่อนเริ่มใช้งาน", "error");
+                toggleSettingsModal();
+                return;
+            }
+
+            const rawText = document.getElementById('car-text-input').value.trim();
+            const activeSlotFiles = slotFiles.filter(f => f !== null);
+
+            if (!rawText && !specImageFile && activeSlotFiles.length === 0) {
+                showToast("กรุณาใส่ข้อความรายละเอียด หรือแนบรูปภาพอย่างน้อย 1 รูป", "warning");
+                return;
+            }
+
+            document.getElementById('ai-empty-state').classList.add('hidden');
+            document.getElementById('ai-retry-card').classList.add('hidden');
+            document.getElementById('ai-result-container').classList.add('hidden');
+            document.getElementById('confirm-section').classList.add('hidden');
+            document.getElementById('ai-loading').classList.remove('hidden');
+            
+            document.getElementById('ai-status-badge').className = "apple-caption px-3 py-1 rounded-full bg-[#2997ff]/20 text-[#2997ff] border border-[#2997ff]/30 animate-pulse";
+            document.getElementById('ai-status-badge').innerText = "กำลังวิเคราะห์...";
+            document.getElementById('nav-status-indicator').innerText = "Gemini กำลังประมวลผลสเปกและรูปภาพ...";
+
+            try {
+                let imageParts = [];
+
+                if (specImageFile) {
+                    const specPart = await fileToBase64Part(specImageFile);
+                    imageParts.push(specPart);
+                }
+
+                const vehiclePhotoParts = await Promise.all(activeSlotFiles.map(file => fileToBase64Part(file)));
+                imageParts = [...imageParts, ...vehiclePhotoParts];
+
+                const systemInstruction = `คุณคือ "AI ผู้เชี่ยวชาญด้านการจัดทำข้อมูลสเปกรถยนต์มือสอง" สำหรับระบบ AI Flow Process
+
+[หน้าที่ของคุณ]
+1. อ่านและวิเคราะห์ข้อมูลสเปกรถยนต์จากข้อความและรูปภาพข้อมูลสเปก (ถ้ามี) ที่ผู้ใช้ส่งมา
+2. วิเคราะห์รูปภาพรถยนต์ทั้งหมดที่แนบมา (รูปถ่ายภายนอก ภายใน และหน้าปัดเรือนไมล์) เพื่อตรวจสอบรายละเอียดสเปกและอ่านค่าเลขไมล์ (Odometer)
+3. นำข้อมูลทั้งหมดมาจัดระเบียบ แปล และสรุปให้อยู่ในรูปแบบโครงสร้างหัวข้อภาษาไทยที่กำหนดไว้อย่างถูกต้อง 100%
+
+[กฎเหล็กและเงื่อนไขที่ต้องปฏิบัติตามอย่างเคร่งครัด]
+1. ภาษา: ต้องตอบเป็นภาษาไทยที่ถูกต้อง เป็นทางการ และกระชับ
+2. โครงสร้างหัวข้อ: ต้องใช้โครงสร้าง 3 หัวข้อหลัก และหัวข้อย่อยตามที่กำหนดไว้ข้างล่างนี้เท่านั้น
+   ⚠️ ห้ามแก้ไขชื่อหัวข้อ ห้ามตัดหัวข้อออก และห้ามเพิ่มหัวข้อใหม่เด็ดขาด!
+3. การระบุเลขไมล์: ให้ยึดข้อมูลเลขไมล์จากภาพถ่ายหน้าปัดเรือนไมล์เป็นหลัก หากในภาพเห็นชัดเจน ให้นำค่านั้นมาใส่ที่หัวข้อ "เลขไมล์ (กม.)"
+4. การจัดการข้อมูลที่ไม่มี: หากหัวข้อใดไม่มีข้อมูลทั้งจากข้อความและรูปภาพ ให้ระบุว่า "-" เท่านั้น ห้ามเดาหรือสร้างข้อมูลเท็จ
+
+[โครงสร้าง JSON ที่ต้องตอบกลับมาเท่านั้น]
+{
+  "general_info": {
+    "ประเภท": "",
+    "ยี่ห้อ": "",
+    "รุ่นรถยนต์": "",
+    "ปีจดทะเบียน": "",
+    "สีตัวถัง": "",
+    "จำนวนที่นั่ง": "",
+    "ประตู": ""
+  },
+  "engine_and_transmission": {
+    "เลขไมล์ (กม.)": "",
+    "เครื่องยนต์": "",
+    "ขนาดเครื่องยนต์": "",
+    "ระบบขับเคลื่อน": "",
+    "เชื้อเพลิง": "",
+    "เกียร์": "",
+    "จำนวนเกียร์": "",
+    "ระบบพวงมาลัย": ""
+  },
+  "wheels_and_tires": {
+    "ขนาดล้อหน้า": "",
+    "ขนาดล้อหลัง": "",
+    "ขอบล้อหน้า": "",
+    "ขอบล้อหลัง": ""
+  },
+  "formatted_text": "*รายละเอียดทั่วไป\\n- ประเภท : [ข้อมูล]\\n- ยี่ห้อ : [ข้อมูล]\\n- รุ่นรถยนต์ : [ข้อมูล]\\n- ปีจดทะเบียน : [ข้อมูล]\\n- สีตัวถัง : [ข้อมูล]\\n- จำนวนที่นั่ง : [ข้อมูล]\\n- ประตู : [ข้อมูล]\\n\\n*เครื่องยนต์และเกียร์\\n- เลขไมล์ (กม.) : [ข้อมูล]\\n- เครื่องยนต์ : [ข้อมูล]\\n- ขนาดเครื่องยนต์ : [ข้อมูล]\\n- ระบบขับเคลื่อน : [ข้อมูล]\\n- เชื้อเพลิง : [ข้อมูล]\\n- เกียร์ : [ข้อมูล]\\n- จำนวนเกียร์ : [ข้อมูล]\\n- ระบบพวงมาลัย : [ข้อมูล]\\n\\n*ขล้อและบยาง\\n- ขนาดล้อหน้า : [ข้อมูล]\\n- ขนาดล้อหลัง : [ข้อมูล]\\n- ขอบล้อหน้า : [ข้อมูล]\\n- ขอบล้อหลัง : [ข้อมูล]"
+}`;
+
+                const payload = {
+                    contents: [{
+                        role: "user",
+                        parts: [
+                            { text: `รายละเอียดเบื้องต้นจากผู้ใช้:\n${rawText}` },
+                            ...imageParts
+                        ]
+                    }],
+                    systemInstruction: {
+                        parts: [{ text: systemInstruction }]
+                    },
+                    generationConfig: {
+                        responseMimeType: "application/json"
+                    }
+                };
+
+                const modelsToTry = [
+                    "gemini-2.5-flash",
+                    "gemini-2.0-flash",
+                    "gemini-1.5-flash"
+                ];
+
+                let lastError = null;
+                let data = null;
+
+                for (let i = 0; i < modelsToTry.length; i++) {
+                    const modelName = modelsToTry[i];
+                    document.getElementById('ai-loading-text').innerText = `Gemini AI กำลังวิเคราะห์ (${modelName})...`;
+
+                    try {
+                        const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${config.geminiKey}`;
+                        
+                        const response = await fetch(apiUrl, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (!response.ok) {
+                            const errData = await response.json().catch(() => ({}));
+                            const msg = errData.error?.message || response.statusText;
+                            
+                            if (response.status === 429 || response.status === 503 || response.status === 500 || msg.includes('high demand') || msg.includes('quota') || msg.includes('busy')) {
+                                console.warn(`Model ${modelName} high demand/busy. Retrying fallback model...`);
+                                lastError = new Error(`Model ${modelName} experiencing high demand`);
+                                await new Promise(r => setTimeout(r, 1200));
+                                continue;
+                            }
+                            throw new Error(msg || "เกิดข้อผิดพลาดในการเรียก Gemini API");
+                        }
+
+                        data = await response.json();
+                        if (data && data.candidates && data.candidates[0]) {
+                            break;
+                        }
+                    } catch (err) {
+                        lastError = err;
+                        console.warn(`Attempt with ${modelName} failed:`, err.message);
+                        if (i < modelsToTry.length - 1) {
+                            await new Promise(r => setTimeout(r, 1000));
+                        }
+                    }
+                }
+
+                if (!data || !data.candidates || !data.candidates[0]) {
+                    throw lastError || new Error("ไม่สามารถประมวลผลได้เนื่องจากเซิร์ฟเวอร์ยุ่งชั่วคราว");
+                }
+
+                const jsonText = data.candidates[0].content.parts[0].text;
+                parsedCarData = JSON.parse(jsonText);
+
+                document.getElementById('ai-text-output').innerText = parsedCarData.formatted_text || formatCarDataText(parsedCarData);
+                document.getElementById('odometer-val').innerText = parsedCarData.engine_and_transmission?.["เลขไมล์ (กม.)"] || "-";
+
+                document.getElementById('ai-loading').classList.add('hidden');
+                document.getElementById('ai-result-container').classList.remove('hidden');
+                document.getElementById('confirm-section').classList.remove('hidden');
+
+                document.getElementById('ai-status-badge').className = "apple-caption px-3 py-1 rounded-full bg-[#34c759]/20 text-[#34c759] border border-[#34c759]/30";
+                document.getElementById('ai-status-badge').innerText = "วิเคราะห์สำเร็จ";
+                document.getElementById('nav-status-indicator').innerText = "พร้อมบันทึกเข้า Supabase";
+
+                showToast("Gemini สรุปข้อมูลสำเร็จแล้ว กรุณาตรวจสอบก่อนกดบันทึก", "success");
+
+            } catch (err) {
+                console.error(err);
+                document.getElementById('ai-loading').classList.add('hidden');
+                
+                const isHighDemand = err.message && (err.message.includes('high demand') || err.message.includes('busy') || err.message.includes('503') || err.message.includes('429'));
+                
+                if (isHighDemand) {
+                    document.getElementById('ai-retry-card').classList.remove('hidden');
+                    showToast("ระบบ AI มีผู้ใช้งานจำนวนมากชั่วคราว กรุณากดปุ่มลองอีกครั้ง", "warning");
+                } else {
+                    document.getElementById('ai-empty-state').classList.remove('hidden');
+                    showToast("เกิดข้อผิดพลาด: " + err.message, "error");
+                }
+
+                document.getElementById('ai-status-badge').className = "apple-caption px-3 py-1 rounded-full bg-[#ff3b30]/20 text-[#ff3b30] border border-[#ff3b30]/30";
+                document.getElementById('ai-status-badge').innerText = "เกิดข้อผิดพลาด";
+                document.getElementById('nav-status-indicator').innerText = "ประมวลผลไม่สำเร็จ";
+            }
+        }
+
+        function formatCarDataText(data) {
+            let txt = "*รายละเอียดทั่วไป\n";
+            for (let [k, v] of Object.entries(data.general_info || {})) {
+                txt += `- ${k} : ${v || '-'}\n`;
+            }
+            txt += "\n*เครื่องยนต์และเกียร์\n";
+            for (let [k, v] of Object.entries(data.engine_and_transmission || {})) {
+                txt += `- ${k} : ${v || '-'}\n`;
+            }
+            txt += "\n*ขล้อและบยาง\n";
+            for (let [k, v] of Object.entries(data.wheels_and_tires || {})) {
+                txt += `- ${k} : ${v || '-'}\n`;
+            }
+            return txt;
+        }
+
+        async function saveToSupabaseFlow() {
+            if (!config.supabaseUrl || !config.supabaseKey) {
+                showToast("กรุณาระบุ Supabase URL และ Anon Key ในเมนูตั้งค่าก่อน", "error");
+                toggleSettingsModal();
+                return;
+            }
+
+            if (!parsedCarData) {
+                showToast("ไม่มีข้อมูลสกัดจาก AI กรุณากดประมวลผลก่อน", "warning");
+                return;
+            }
+
+            const btnSave = document.getElementById('btn-save-supabase');
+            btnSave.disabled = true;
+            btnSave.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-[15px]"></i> <span>กำลังอัปโหลดรูปภาพและบันทึกข้อมูล...</span>`;
+
+            try {
+                const { createClient } = supabase;
+                const supabaseClient = createClient(config.supabaseUrl, config.supabaseKey);
+
+                let imageUrls = [];
+
+                // Upload 15 slot images in exact slot order (1 to 15)
+                const activeCount = slotFiles.filter(f => f !== null).length;
+                if (activeCount > 0) {
+                    showToast(`กำลังอัปโหลดรูปภาพตามลำดับช่อง (${activeCount} รูป)...`, "info");
+                    
+                    for (let i = 0; i < 15; i++) {
+                        const file = slotFiles[i];
+                        if (!file) continue;
+
+                        const fileExt = file.name.split('.').pop();
+                        const fileName = `car_${Date.now()}_slot${i + 1}.${fileExt}`;
+                        const filePath = `${fileName}`;
+
+                        const { error: uploadErr } = await supabaseClient
+                            .storage
+                            .from(config.bucketName)
+                            .upload(filePath, file, { cacheControl: '3600', upsert: true });
+
+                        if (uploadErr) {
+                            console.warn("Upload Warning:", uploadErr);
+                        }
+
+                        const { data: publicUrlData } = supabaseClient
+                            .storage
+                            .from(config.bucketName)
+                            .getPublicUrl(filePath);
+
+                        imageUrls.push(publicUrlData.publicUrl);
+                    }
+                }
+
+                showToast("กำลังบันทึกข้อมูลเข้าตาราง " + config.tableName + "...", "info");
+
+                const recordPayload = {
+                    formatted_text: parsedCarData.formatted_text || formatCarDataText(parsedCarData),
+                    general_info: parsedCarData.general_info,
+                    engine_and_transmission: parsedCarData.engine_and_transmission,
+                    wheels_and_tires: parsedCarData.wheels_and_tires,
+                    odometer: parsedCarData.engine_and_transmission?.["เลขไมล์ (กม.)"] || "-",
+                    image_urls: imageUrls,
+                    created_at: new Date().toISOString()
+                };
+
+                const { error: dbErr } = await supabaseClient
+                    .from(config.tableName)
+                    .insert([recordPayload]);
+
+                if (dbErr) {
+                    throw new Error("Supabase DB Insert Error: " + dbErr.message);
+                }
+
+                showToast("บันทึกข้อมูลและอัปโหลดรูปภาพเรียบร้อยแล้ว!", "success");
+                document.getElementById('nav-status-indicator').innerText = "บันทึกข้อมูลสำเร็จแล้ว";
+
+                // คืนค่าเดิมช่องรายละเอียดสเปกรถยนต์ และรีเซ็ตฟอร์มเข้าสู่สภาพเดิม
+                resetFormAfterSave();
+
+            } catch (err) {
+                console.error(err);
+                showToast("เกิดข้อผิดพลาดในการบันทึก: " + err.message, "error");
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-[15px]"></i> <span>บันทึกข้อมูลและอัปโหลดรูปภาพเข้า Supabase</span>`;
+            }
+        }
+
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgColors = "bg-[#1d1d1f] text-white border border-[#333333]";
+            let icon = "fa-circle-info text-[#2997ff]";
+
+            if (type === "success") {
+                bgColors = "bg-[#1d1d1f] text-white border border-[#34c759]";
+                icon = "fa-circle-check text-[#34c759]";
+            } else if (type === "error") {
+                bgColors = "bg-[#1d1d1f] text-white border border-[#ff3b30]";
+                icon = "fa-triangle-exclamation text-[#ff3b30]";
+            } else if (type === "warning") {
+                bgColors = "bg-[#1d1d1f] text-white border border-[#ff9500]";
+                icon = "fa-circle-exclamation text-[#ff9500]";
+            }
+
+            toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-[12px] ${bgColors} shadow-2xl text-[14px] transition-all duration-300 transform translate-y-2 opacity-0 apple-product-shadow`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 4000);
+        }
+    </script>
+</body>
+</html>
