@@ -393,13 +393,22 @@
         let draggedSlotIndex = null;
         let targetSlotForPick = null;
 
-        // Configuration State
+        // =========================================================================
+        //  ตั้งค่า API & Supabase แบบถาวร (ใส่ Key จริงของคุณตรงนี้ได้ทันที)
+        // =========================================================================
+        const PERMANENT_GEMINI_KEY = ""; // ใส่ Gemini API Key ถาวร เช่น "AIzaSy..."
+        const PERMANENT_SUPABASE_URL = ""; // ใส่ Supabase URL ถาวร เช่น "https://xxxx.supabase.co"
+        const PERMANENT_SUPABASE_KEY = ""; // ใส่ Supabase Anon Key ถาวร เช่น "eyJhbGci..."
+        const DEFAULT_BUCKET_NAME = "car-images";
+        const DEFAULT_TABLE_NAME = "TPZCOOMCAR";
+
+        // Configuration State - ดึงจาก LocalStorage หากไม่มีจะใช้ค่าถาวรด้านบน
         let config = {
-            geminiKey: localStorage.getItem('gemini_key') || '',
-            supabaseUrl: localStorage.getItem('supabase_url') || '',
-            supabaseKey: localStorage.getItem('supabase_key') || '',
-            bucketName: localStorage.getItem('bucket_name') || 'car-images',
-            tableName: localStorage.getItem('table_name') || 'TPZCOOMCAR'
+            geminiKey: localStorage.getItem('gemini_key') || PERMANENT_GEMINI_KEY,
+            supabaseUrl: localStorage.getItem('supabase_url') || PERMANENT_SUPABASE_URL,
+            supabaseKey: localStorage.getItem('supabase_key') || PERMANENT_SUPABASE_KEY,
+            bucketName: localStorage.getItem('bucket_name') || DEFAULT_BUCKET_NAME,
+            tableName: localStorage.getItem('table_name') || DEFAULT_TABLE_NAME
         };
 
         const DEFAULT_CAR_TEXT = ``;
