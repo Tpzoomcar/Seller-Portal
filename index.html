@@ -285,6 +285,111 @@
         </div>
     </div>
 
+    <!-- Modal: Apple Product Spec Edit Form -->
+    <div id="vehicle-edit-modal" class="fixed inset-0 bg-[#000000]/70 backdrop-blur-md z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+        <div class="bg-white border border-[#e0e0e0] w-full max-w-2xl rounded-[24px] overflow-hidden shadow-2xl relative my-8 p-6 sm:p-8">
+            <div class="flex justify-between items-center border-b border-[#e0e0e0] pb-4 mb-6">
+                <h3 class="apple-body-strong text-[22px] text-[#1d1d1f] flex items-center gap-2">
+                    <i class="fa-solid fa-pen-to-square text-[#0066cc]"></i>
+                    <span>แก้ไขข้อมูลรถยนต์</span>
+                </h3>
+                <button onclick="closeEditModal()" class="w-8 h-8 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#7a7a7a] flex items-center justify-center apple-active-scale">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form id="edit-vehicle-form" onsubmit="saveVehicleEdit(event)" class="space-y-4">
+                <input type="hidden" id="edit-car-id">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">ชื่อรายการ (Title)</label>
+                        <input type="text" id="edit-car-title" required class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">สถานะการแสดงสินค้า</label>
+                        <select id="edit-car-status" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc]">
+                            <option value="available">🟢 กำลังแสดง (พร้อมขาย)</option>
+                            <option value="hidden">🟡 ซ่อนสินค้า (Hidden)</option>
+                            <option value="sold">🔴 ขายแล้ว (Sold Out)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">ทะเบียนรถ</label>
+                        <input type="text" id="edit-car-plate" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">ยี่ห้อ (Brand)</label>
+                        <input type="text" id="edit-car-brand" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">รุ่น (Model)</label>
+                        <input type="text" id="edit-car-model" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">ราคาขาย (บาท)</label>
+                        <input type="number" id="edit-car-price" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">ปีรถยนต์</label>
+                        <input type="text" id="edit-car-year" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                    <div>
+                        <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">เลขไมล์ (กม.)</label>
+                        <input type="text" id="edit-car-mileage" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc]">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1">รายละเอียดคำบรรยายสเปก</label>
+                    <textarea id="edit-car-desc" rows="4" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-2.5 text-[14px] focus:outline-none focus:border-[#0066cc] apple-scrollbar"></textarea>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-4 border-t border-[#e0e0e0]">
+                    <button type="button" onclick="closeEditModal()" class="px-5 py-2 bg-[#fafafc] border border-[#e0e0e0] rounded-full text-[14px] apple-active-scale">
+                        ยกเลิก
+                    </button>
+                    <button type="submit" id="btn-save-edit" class="px-6 py-2 bg-[#0066cc] hover:bg-[#0071e3] text-white rounded-full text-[14px] font-medium apple-active-scale">
+                        <i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกการแก้ไข
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Apple-Style Delete Confirmation Dialog -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-[#000000]/70 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+        <div class="bg-white border border-[#e0e0e0] w-full max-w-md rounded-[20px] p-6 shadow-2xl text-center space-y-4">
+            <div class="w-14 h-14 rounded-full bg-[#ff3b30]/10 border border-[#ff3b30]/20 flex items-center justify-center mx-auto text-[#ff3b30] text-2xl">
+                <i class="fa-solid fa-trash-can"></i>
+            </div>
+            <div>
+                <h3 class="apple-body-strong text-[20px] text-[#1d1d1f]">ยืนยันการลบสินค้าคันนี้?</h3>
+                <p id="delete-modal-subtitle" class="apple-caption text-[#7a7a7a] mt-1">
+                    ระบบจะลบข้อมูลจากตาราง <span class="font-semibold text-[#1d1d1f]">Information</span> พร้อมลบไฟล์รูปภาพทั้งหมดใน <span class="font-semibold text-[#1d1d1f]">Supabase Storage</span> อย่างถาวร
+                </p>
+            </div>
+            <div class="p-3 bg-[#f5f5f7] rounded-[12px] text-left text-[13px] text-[#1d1d1f]">
+                <p><span class="text-[#7a7a7a]">ชื่อรถ:</span> <span id="delete-modal-title" class="font-semibold">-</span></p>
+                <p><span class="text-[#7a7a7a]">ทะเบียน:</span> <span id="delete-modal-plate" class="font-semibold">-</span></p>
+            </div>
+            <div class="flex justify-center space-x-3 pt-2">
+                <button onclick="closeDeleteModal()" class="px-5 py-2.5 bg-[#f5f5f7] border border-[#e0e0e0] rounded-full text-[14px] text-[#1d1d1f] apple-active-scale">
+                    ยกเลิก
+                </button>
+                <button id="btn-execute-delete" onclick="executeVehicleDelete()" class="px-6 py-2.5 bg-[#ff3b30] hover:bg-[#d70015] text-white rounded-full text-[14px] font-medium apple-active-scale">
+                    <i class="fa-solid fa-trash-can mr-1"></i> ลบข้อมูลและรูปภาพถาวร
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- VIEW 1: VEHICLE CREATION & AI EXTRACTOR WORKSPACE -->
     <main id="view-create-workspace" class="flex-1 w-full max-w-[1440px] mx-auto transition-opacity duration-300">
         
@@ -356,7 +461,7 @@
                         </div>
                     </div>
 
-                    <!-- Section 2: เพิ่มรูปภาพรถยนต์ทั้งหมด 15 รูป (Fixed 15 Slots Matrix) -->
+                    <!-- Section 2: เพิ่มรูปภาพรถยนต์ทั้งหมด 20 รูป (Fixed 20 Slots Matrix) -->
                     <div class="space-y-3">
                         <div class="flex items-center justify-between border-b border-[#f0f0f0] pb-2">
                             <h2 class="apple-body-strong text-[19px] text-[#1d1d1f] flex items-center gap-2">
@@ -364,7 +469,7 @@
                                 <span>เพิ่มรูปภาพรถยนต์</span>
                             </h2>
                             <div class="flex items-center space-x-2">
-                                <span id="image-counter-badge" class="apple-caption bg-[#f5f5f7] text-[#1d1d1f] px-3 py-1 rounded-full font-medium">0 / 15 รูป</span>
+                                <span id="image-counter-badge" class="apple-caption bg-[#f5f5f7] text-[#1d1d1f] px-3 py-1 rounded-full font-medium">0 / 20 รูป</span>
                                 <button type="button" title="เพิ่มรูปภาพ" onclick="document.getElementById('file-input').click()" class="w-8 h-8 rounded-full bg-[#0066cc] hover:bg-[#0071e3] text-white flex items-center justify-center apple-active-scale shadow-sm transition-colors">
                                     <i class="fa-solid fa-plus text-[14px]"></i>
                                 </button>
@@ -373,11 +478,11 @@
                             </div>
                         </div>
 
-                        <p class="apple-caption text-[#7a7a7a]">ลากรูปสลับตำแหน่งข้ามช่อง 1-15 ได้อย่างอิสระ ลำดับจะถูกยึดบันทึกลง Supabase ตามเลขช่อง</p>
+                        <p class="apple-caption text-[#7a7a7a]">ลากรูปสลับตำแหน่งข้ามช่อง 1-20 ได้อย่างอิสระ ลำดับจะถูกยึดบันทึกลง Supabase ตามเลขช่อง</p>
 
-                        <!-- 15 Fixed Slots Grid Matrix -->
+                        <!-- 20 Fixed Slots Grid Matrix -->
                         <div id="image-slots-grid" class="grid grid-cols-3 sm:grid-cols-5 gap-3 mt-4 min-h-[100px] p-1 select-none">
-                            <!-- Populated dynamically: 15 fixed slot cards -->
+                            <!-- Populated dynamically: 20 fixed slot cards -->
                         </div>
                     </div>
 
@@ -503,6 +608,19 @@
                         <span id="demo-toggle-label">ซ่อนตัวอย่าง Mock Data (2 รายการ)</span>
                     </button>
                 </div>
+
+                <!-- Status Filter Pills -->
+                <div class="flex items-center justify-center space-x-2 pt-2">
+                    <button onclick="setStatusFilter('all')" id="status-filter-all" class="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all bg-[#0066cc] text-white">
+                        ทั้งหมด
+                    </button>
+                    <button onclick="setStatusFilter('available')" id="status-filter-available" class="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all bg-[#fafafc] text-[#7a7a7a] hover:text-[#1d1d1f] border border-[#e0e0e0]">
+                        <i class="fa-solid fa-eye text-[#34c759] mr-1"></i> กำลังแสดง
+                    </button>
+                    <button onclick="setStatusFilter('hidden')" id="status-filter-hidden" class="px-4 py-1.5 rounded-full text-[12px] font-medium transition-all bg-[#fafafc] text-[#7a7a7a] hover:text-[#1d1d1f] border border-[#e0e0e0]">
+                        <i class="fa-solid fa-eye-slash text-[#ff9500] mr-1"></i> ซ่อนอยู่
+                    </button>
+                </div>
             </div>
         </section>
 
@@ -548,16 +666,19 @@
     </footer>
 
     <script>
-        // Global Application State - Exactly 15 Fixed Slots
-        let slotFiles = new Array(15).fill(null);
+        // Global Application State - Exactly 20 Fixed Slots (Updated from 15)
+        let slotFiles = new Array(20).fill(null);
         let specImageFile = null;
         let parsedCarData = null;
         let draggedSlotIndex = null;
         let targetSlotForPick = null;
 
-        // Current Active View State ('create' or 'gallery')
+        // Current Active View & Filter State
         let currentView = 'create';
-        let showDemoData = true; // Show initial 2 mock data until user posts real data or toggles off
+        let showDemoData = true;
+        let currentStatusFilter = 'all'; // 'all', 'available', 'hidden'
+        let vehicleToDelete = null;
+        let vehicleToEdit = null;
 
         // Mock Cars Data (2 Premium Sample Vehicles independent of Supabase)
         const MOCK_VEHICLES = [
@@ -582,6 +703,7 @@
                 installment_48: 84500,
                 installment_60: 69800,
                 installment_72: 61200,
+                status: 'available',
                 title: 'Porsche Macan 2.0 GTS Look (ปี 2023)',
                 description: '*สภาพนางฟ้า ประวัติศูนย์ครบถ้วน ดำเนินการเช็ก 111 จุดเรียบร้อยแล้ว\n- ทะเบียน : 3กข 8899 กรุงเทพมหานคร\n- เครื่องยนต์ : 2.0 Turbo 265 แรงม้า\n- หลังคา Panoramic Glass Roof\n- ชุดแต่ง GTS Aero Package รอบคัน\n- ล้อแม็ก Porsche Sport Classic 21 นิ้ว',
                 images: [
@@ -611,6 +733,7 @@
                 installment_48: 41200,
                 installment_60: 34100,
                 installment_72: 29800,
+                status: 'available',
                 title: 'BMW 320d M Sport LCI (ปี 2022)',
                 description: '*มือเดียวออกห้าง BSI เหลือถึงปี 2027 วิ่งน้อยดูแลอย่างดี\n- ทะเบียน : กข 5544 เชียงใหม่\n- เครื่องยนต์ดีเซล ประหยัดน้ำมันสูงสุด 21 กม./ลิตร\n- ชุดแต่ง M Aerodynamics รอบคัน\n- หน้าจอ BMW Curved Display + iDrive 8',
                 images: [
@@ -639,6 +762,43 @@
             tableName: localStorage.getItem('table_name') || DEFAULT_TABLE_NAME
         };
 
+        function showToast(message, type = "info") {
+            const container = document.getElementById('toast-container');
+            if (!container) return;
+
+            const toast = document.createElement('div');
+            let bgClass = "bg-[#1d1d1f] text-white border-[#333333]";
+            let iconClass = "fa-circle-info text-[#2997ff]";
+
+            if (type === "success") {
+                bgClass = "bg-white text-[#1d1d1f] border-[#e0e0e0]";
+                iconClass = "fa-circle-check text-[#34c759]";
+            } else if (type === "warning") {
+                bgClass = "bg-white text-[#1d1d1f] border-[#e0e0e0]";
+                iconClass = "fa-triangle-exclamation text-[#ff9500]";
+            } else if (type === "error") {
+                bgClass = "bg-white text-[#1d1d1f] border-[#e0e0e0]";
+                iconClass = "fa-circle-xmark text-[#ff3b30]";
+            }
+
+            toast.className = `flex items-center gap-3 px-4 py-3 rounded-[14px] border shadow-2xl backdrop-blur-md transition-all duration-300 pointer-events-auto transform translate-y-2 opacity-0 text-[13px] font-medium min-w-[280px] max-w-sm ${bgClass}`;
+            toast.innerHTML = `
+                <i class="fa-solid ${iconClass} text-[16px]"></i>
+                <span class="flex-1 leading-snug">${message}</span>
+            `;
+
+            container.appendChild(toast);
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3500);
+        }
+
         function resetCarTextInput() {
             document.getElementById('car-text-input').value = '';
             showToast("ล้างข้อความรายละเอียดสเปกเรียบร้อยแล้ว", "info");
@@ -652,7 +812,7 @@
         function resetFormAfterSave() {
             document.getElementById('car-text-input').value = '';
             removeSpecImage();
-            slotFiles = new Array(15).fill(null);
+            slotFiles = new Array(20).fill(null);
             renderSlotsGrid();
 
             parsedCarData = null;
@@ -723,9 +883,9 @@
 
             grid.innerHTML = '';
             const activeCount = slotFiles.filter(f => f !== null).length;
-            counter.innerText = `${activeCount} / 15 รูป`;
+            counter.innerText = `${activeCount} / 20 รูป`;
 
-            for (let i = 0; i < 15; i++) {
+            for (let i = 0; i < 20; i++) {
                 const file = slotFiles[i];
                 const slotCard = document.createElement('div');
                 slotCard.className = `relative aspect-square rounded-[11px] border transition-all flex flex-col justify-between p-1.5 ${
@@ -846,7 +1006,7 @@
             if (!files.length) return;
 
             let fileIdx = 0;
-            for (let i = 0; i < 15 && fileIdx < files.length; i++) {
+            for (let i = 0; i < 20 && fileIdx < files.length; i++) {
                 if (slotFiles[i] === null) {
                     slotFiles[i] = files[fileIdx];
                     fileIdx++;
@@ -854,7 +1014,7 @@
             }
 
             if (fileIdx < files.length) {
-                showToast("เพิ่มรูปครบ 15 ช่องแล้ว บางรูปอาจไม่ได้ถูกเพิ่ม", "warning");
+                showToast("เพิ่มรูปครบ 20 ช่องแล้ว บางรูปอาจไม่ได้ถูกเพิ่ม", "warning");
             }
 
             renderSlotsGrid();
@@ -1159,12 +1319,12 @@
 
                 let imageUrls = [];
 
-                // Upload 15 slot images in exact slot order (1 to 15)
+                // Upload 20 slot images in exact slot order (1 to 20)
                 const activeCount = slotFiles.filter(f => f !== null).length;
                 if (activeCount > 0) {
                     showToast(`กำลังอัปโหลดรูปภาพตามลำดับช่อง (${activeCount} รูป)...`, "info");
                     
-                    for (let i = 0; i < 15; i++) {
+                    for (let i = 0; i < 20; i++) {
                         const file = slotFiles[i];
                         if (!file) continue;
 
@@ -1304,6 +1464,10 @@
             }
         }
 
+        function filterGalleryItems() {
+            renderGalleryGrid();
+        }
+
         function renderGalleryGrid() {
             const grid = document.getElementById('gallery-grid');
             const empty = document.getElementById('gallery-empty-state');
@@ -1319,6 +1483,14 @@
                 allItems = [...loadedSupabaseCars, ...MOCK_VEHICLES];
             } else {
                 allItems = [...loadedSupabaseCars];
+            }
+
+            // Apply Status Filtering
+            if (currentStatusFilter !== 'all') {
+                allItems = allItems.filter(item => {
+                    const status = item.status || 'available';
+                    return status === currentStatusFilter;
+                });
             }
 
             // Apply Search Filtering
@@ -1343,7 +1515,7 @@
 
             allItems.forEach((car) => {
                 const card = document.createElement('div');
-                card.className = "bg-white border border-[#e0e0e0] rounded-[22px] overflow-hidden flex flex-col justify-between apple-active-scale transition-all hover:border-[#0066cc] group";
+                card.className = "bg-white border border-[#e0e0e0] rounded-[22px] overflow-hidden flex flex-col justify-between apple-active-scale transition-all hover:border-[#0066cc] group relative";
 
                 const displayImage = (car.images && car.images.length > 0) 
                     ? car.images[0] 
@@ -1353,9 +1525,18 @@
                     ? `฿${Number(car.price).toLocaleString()}` 
                     : 'ติดต่อสอบถามราคา';
 
-                const formattedInstallment = car.installment_48 
-                    ? `฿${Number(car.installment_48).toLocaleString()}/เดือน` 
-                    : '-';
+                const status = car.status || 'available';
+                let statusBadgeHtml = '';
+                if (status === 'available') {
+                    statusBadgeHtml = `<span class="bg-[#34c759]/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-xs flex items-center gap-1"><i class="fa-solid fa-circle text-[7px]"></i> กำลังแสดง</span>`;
+                } else if (status === 'hidden') {
+                    statusBadgeHtml = `<span class="bg-[#ff9500]/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-xs flex items-center gap-1"><i class="fa-solid fa-eye-slash text-[8px]"></i> ซ่อนอยู่</span>`;
+                } else {
+                    statusBadgeHtml = `<span class="bg-[#ff3b30]/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-xs">ขายแล้ว</span>`;
+                }
+
+                // JSON escape helper for inline handlers
+                const carJson = JSON.stringify(car).replace(/'/g, "&apos;");
 
                 card.innerHTML = `
                     <div>
@@ -1369,15 +1550,25 @@
                                 <span>${car.license_plate || '-'}</span>
                             </div>
 
-                            ${car.is_mock ? `
-                                <div class="absolute top-3 right-3 bg-[#ff9500]/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-xs">
-                                    Mock Sample
-                                </div>
-                            ` : `
-                                <div class="absolute top-3 right-3 bg-[#0066cc]/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-xs">
-                                    Live Supabase
-                                </div>
-                            `}
+                            <!-- Status Badge & Quick Control Action Buttons -->
+                            <div class="absolute top-3 right-3 flex items-center space-x-1.5">
+                                ${statusBadgeHtml}
+                                
+                                <button onclick='toggleVehicleVisibility(${carJson}, event)' title="สลับการเปิด/ซ่อนสินค้า" 
+                                        class="w-7 h-7 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center backdrop-blur-md apple-active-scale transition-colors border border-white/20">
+                                    <i class="fa-solid ${status === 'available' ? 'fa-eye' : 'fa-eye-slash text-[#ff9500]'} text-[11px]"></i>
+                                </button>
+                                
+                                <button onclick='openEditModal(${carJson}, event)' title="แก้ไขข้อมูล" 
+                                        class="w-7 h-7 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center backdrop-blur-md apple-active-scale transition-colors border border-white/20">
+                                    <i class="fa-solid fa-pen-to-square text-[11px]"></i>
+                                </button>
+
+                                <button onclick='confirmDeleteVehicle(${carJson}, event)' title="ลบสินค้าคันนี้" 
+                                        class="w-7 h-7 rounded-full bg-black/60 hover:bg-[#ff3b30] text-white flex items-center justify-center backdrop-blur-md apple-active-scale transition-colors border border-white/20">
+                                    <i class="fa-solid fa-trash-can text-[11px]"></i>
+                                </button>
+                            </div>
                         </div>
 
                         <!-- Card Content Body -->
@@ -1403,10 +1594,12 @@
                             <p class="apple-caption text-[#7a7a7a] text-[11px]">ราคาเงินสด</p>
                             <p class="apple-body-strong text-[#0066cc] text-[19px]">${formattedPrice}</p>
                         </div>
-                        <button onclick='openDetailModal(${JSON.stringify(car).replace(/'/g, "&apos;")})' 
-                                class="px-4 py-2 bg-[#f5f5f7] hover:bg-[#0066cc] hover:text-white text-[#1d1d1f] rounded-full text-[13px] font-medium apple-active-scale transition-colors border border-[#e0e0e0]">
-                            ดูสเปกเต็ม
-                        </button>
+                        <div class="flex items-center space-x-2">
+                            <button onclick='openDetailModal(${carJson})' 
+                                    class="px-4 py-2 bg-[#f5f5f7] hover:bg-[#0066cc] hover:text-white text-[#1d1d1f] rounded-full text-[13px] font-medium apple-active-scale transition-colors border border-[#e0e0e0]">
+                                ดูสเปกเต็ม
+                            </button>
+                        </div>
                     </div>
                 `;
 
@@ -1414,69 +1607,235 @@
             });
         }
 
-        function filterGalleryItems() {
+        function setStatusFilter(status) {
+            currentStatusFilter = status;
+            
+            const btnAll = document.getElementById('status-filter-all');
+            const btnAvail = document.getElementById('status-filter-available');
+            const btnHidden = document.getElementById('status-filter-hidden');
+
+            const activeStyle = "px-4 py-1.5 rounded-full text-[12px] font-medium transition-all bg-[#0066cc] text-white";
+            const inactiveStyle = "px-4 py-1.5 rounded-full text-[12px] font-medium transition-all bg-[#fafafc] text-[#7a7a7a] hover:text-[#1d1d1f] border border-[#e0e0e0]";
+
+            if (btnAll) btnAll.className = status === 'all' ? activeStyle : inactiveStyle;
+            if (btnAvail) btnAvail.className = status === 'available' ? activeStyle : inactiveStyle;
+            if (btnHidden) btnHidden.className = status === 'hidden' ? activeStyle : inactiveStyle;
+
             renderGalleryGrid();
         }
 
         function openDetailModal(car) {
-            const modal = document.getElementById('vehicle-detail-modal');
-            
-            document.getElementById('detail-modal-img').src = (car.images && car.images[0]) ? car.images[0] : 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80';
+            document.getElementById('detail-modal-img').src = (car.images && car.images[0]) ? car.images[0] : 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=800&q=80';
             document.getElementById('detail-modal-plate').innerText = car.license_plate || '-';
-            document.getElementById('detail-modal-brand').innerText = car.brand || 'VEHICLE';
-            document.getElementById('detail-modal-title').innerText = car.title || 'รายละเอียดรถยนต์';
+            document.getElementById('detail-modal-brand').innerText = car.brand || 'BRAND';
+            document.getElementById('detail-modal-title').innerText = car.title || car.brand || 'รายละเอียดรถยนต์';
             document.getElementById('detail-modal-subtitle').innerText = car.submodel || car.category || '-';
-            
-            document.getElementById('detail-modal-price').innerText = car.price ? `฿${Number(car.price).toLocaleString()}` : 'สอบถามราคา';
+            document.getElementById('detail-modal-price').innerText = car.price ? `฿${Number(car.price).toLocaleString()}` : 'ติดต่อสอบถามราคา';
             document.getElementById('detail-modal-year').innerText = car.year || '-';
             document.getElementById('detail-modal-mileage').innerText = car.mileage ? `${car.mileage} กม.` : '-';
             document.getElementById('detail-modal-trans').innerText = car.transmission || '-';
             document.getElementById('detail-modal-fuel').innerText = car.fuel_type || '-';
 
-            document.getElementById('detail-modal-i48').innerText = car.installment_48 ? `฿${Number(car.installment_48).toLocaleString()}` : '-';
-            document.getElementById('detail-modal-i60').innerText = car.installment_60 ? `฿${Number(car.installment_60).toLocaleString()}` : '-';
-            document.getElementById('detail-modal-i72').innerText = car.installment_72 ? `฿${Number(car.installment_72).toLocaleString()}` : '-';
+            document.getElementById('detail-modal-i48').innerText = car.installment_48 ? `฿${Number(car.installment_48).toLocaleString()}/ด.` : '-';
+            document.getElementById('detail-modal-i60').innerText = car.installment_60 ? `฿${Number(car.installment_60).toLocaleString()}/ด.` : '-';
+            document.getElementById('detail-modal-i72').innerText = car.installment_72 ? `฿${Number(car.installment_72).toLocaleString()}/ด.` : '-';
 
             document.getElementById('detail-modal-desc').innerText = car.description || car.raw_spec_text || 'ไม่มีรายละเอียดเพิ่มเติม';
 
-            modal.classList.remove('hidden');
+            document.getElementById('vehicle-detail-modal').classList.remove('hidden');
         }
 
         function closeDetailModal() {
             document.getElementById('vehicle-detail-modal').classList.add('hidden');
         }
 
-        function showToast(message, type = "info") {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            
-            let bgColors = "bg-[#1d1d1f] text-white border border-[#333333]";
-            let icon = "fa-circle-info text-[#2997ff]";
+        // 1. Toggle Product Visibility (เปิด/ปิดการแสดงผล)
+        async function toggleVehicleVisibility(car, event) {
+            if (event) event.stopPropagation();
 
-            if (type === "success") {
-                bgColors = "bg-[#1d1d1f] text-white border border-[#34c759]";
-                icon = "fa-circle-check text-[#34c759]";
-            } else if (type === "error") {
-                bgColors = "bg-[#1d1d1f] text-white border border-[#ff3b30]";
-                icon = "fa-triangle-exclamation text-[#ff3b30]";
-            } else if (type === "warning") {
-                bgColors = "bg-[#1d1d1f] text-white border border-[#ff9500]";
-                icon = "fa-circle-exclamation text-[#ff9500]";
+            const newStatus = (car.status === 'hidden') ? 'available' : 'hidden';
+            car.status = newStatus;
+
+            // Update in Supabase database if not mock
+            if (!car.is_mock && config.supabaseUrl && config.supabaseKey) {
+                try {
+                    const { createClient } = supabase;
+                    const supabaseClient = createClient(config.supabaseUrl, config.supabaseKey);
+
+                    await supabaseClient
+                        .from(config.tableName)
+                        .update({ status: newStatus })
+                        .eq('id', car.id);
+
+                    // Sync in memory array
+                    const found = loadedSupabaseCars.find(c => c.id === car.id);
+                    if (found) found.status = newStatus;
+                } catch (err) {
+                    console.warn("Status update error:", err);
+                }
             }
 
-            toast.className = `pointer-events-auto flex items-center space-x-3 px-4 py-3 rounded-[12px] ${bgColors} shadow-2xl text-[14px] transition-all duration-300 transform translate-y-2 opacity-0 apple-product-shadow`;
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+            renderGalleryGrid();
+            showToast(newStatus === 'available' ? "เปิดแสดงสินค้าแล้ว" : "ซ่อนสินค้าเรียบร้อยแล้ว", "info");
+        }
 
-            container.appendChild(toast);
+        // 2. Open & Save Edit Modal Functions
+        function openEditModal(car, event) {
+            if (event) event.stopPropagation();
+            vehicleToEdit = car;
 
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
+            document.getElementById('edit-car-id').value = car.id || '';
+            document.getElementById('edit-car-title').value = car.title || '';
+            document.getElementById('edit-car-status').value = car.status || 'available';
+            document.getElementById('edit-car-plate').value = car.license_plate || '';
+            document.getElementById('edit-car-brand').value = car.brand || '';
+            document.getElementById('edit-car-model').value = car.model || '';
+            document.getElementById('edit-car-price').value = car.price || '';
+            document.getElementById('edit-car-year').value = car.year || '';
+            document.getElementById('edit-car-mileage').value = car.mileage || '';
+            document.getElementById('edit-car-desc').value = car.description || car.raw_spec_text || '';
 
-            setTimeout(() => {
-                toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 300);
-            }, 4000);
+            document.getElementById('vehicle-edit-modal').classList.remove('hidden');
+        }
+
+        function closeEditModal() {
+            document.getElementById('vehicle-edit-modal').classList.add('hidden');
+            vehicleToEdit = null;
+        }
+
+        async function saveVehicleEdit(event) {
+            event.preventDefault();
+            if (!vehicleToEdit) return;
+
+            const updatedData = {
+                title: document.getElementById('edit-car-title').value.trim(),
+                status: document.getElementById('edit-car-status').value,
+                license_plate: document.getElementById('edit-car-plate').value.trim(),
+                brand: document.getElementById('edit-car-brand').value.trim(),
+                model: document.getElementById('edit-car-model').value.trim(),
+                price: parseFloat(document.getElementById('edit-car-price').value) || null,
+                year: document.getElementById('edit-car-year').value.trim(),
+                mileage: document.getElementById('edit-car-mileage').value.trim(),
+                description: document.getElementById('edit-car-desc').value.trim()
+            };
+
+            const btnSave = document.getElementById('btn-save-edit');
+            btnSave.disabled = true;
+            btnSave.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin mr-1"></i> กำลังบันทึก...`;
+
+            try {
+                if (!vehicleToEdit.is_mock && config.supabaseUrl && config.supabaseKey) {
+                    const { createClient } = supabase;
+                    const supabaseClient = createClient(config.supabaseUrl, config.supabaseKey);
+
+                    const { error } = await supabaseClient
+                        .from(config.tableName)
+                        .update(updatedData)
+                        .eq('id', vehicleToEdit.id);
+
+                    if (error) throw error;
+
+                    // Update memory array
+                    const idx = loadedSupabaseCars.findIndex(c => c.id === vehicleToEdit.id);
+                    if (idx !== -1) {
+                        loadedSupabaseCars[idx] = { ...loadedSupabaseCars[idx], ...updatedData };
+                    }
+                } else if (vehicleToEdit.is_mock) {
+                    // Update mock item
+                    Object.assign(vehicleToEdit, updatedData);
+                }
+
+                showToast("บันทึกการแก้ไขเรียบร้อยแล้ว", "success");
+                closeEditModal();
+                renderGalleryGrid();
+            } catch (err) {
+                console.error("Save edit error:", err);
+                showToast("เกิดข้อผิดพลาดในการบันทึก: " + err.message, "error");
+            } finally {
+                btnSave.disabled = false;
+                btnSave.innerHTML = `<i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกการแก้ไข`;
+            }
+        }
+
+        // 3. Confirm & Execute Vehicle Delete (Including Storage Images Purge)
+        function confirmDeleteVehicle(car, event) {
+            if (event) event.stopPropagation();
+            vehicleToDelete = car;
+
+            document.getElementById('delete-modal-title').innerText = car.title || car.brand || 'รถยนต์';
+            document.getElementById('delete-modal-plate').innerText = car.license_plate || '-';
+
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+            vehicleToDelete = null;
+        }
+
+        async function executeVehicleDelete() {
+            if (!vehicleToDelete) return;
+
+            const car = vehicleToDelete;
+            const btnDel = document.getElementById('btn-execute-delete');
+            btnDel.disabled = true;
+            btnDel.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin mr-1"></i> กำลังลบข้อมูล...`;
+
+            try {
+                if (!car.is_mock && config.supabaseUrl && config.supabaseKey) {
+                    const { createClient } = supabase;
+                    const supabaseClient = createClient(config.supabaseUrl, config.supabaseKey);
+
+                    // Purge attached images from Supabase Storage bucket
+                    if (car.images && Array.isArray(car.images) && car.images.length > 0) {
+                        const filePathsToPurge = [];
+                        car.images.forEach(imgUrl => {
+                            if (typeof imgUrl === 'string' && imgUrl.includes(config.bucketName)) {
+                                const parts = imgUrl.split(`${config.bucketName}/`);
+                                if (parts.length > 1) {
+                                    filePathsToPurge.push(parts[1]);
+                                }
+                            }
+                        });
+
+                        if (filePathsToPurge.length > 0) {
+                            const { error: storageErr } = await supabaseClient
+                                .storage
+                                .from(config.bucketName)
+                                .remove(filePathsToPurge);
+
+                            if (storageErr) {
+                                console.warn("Storage deletion warning:", storageErr.message);
+                            }
+                        }
+                    }
+
+                    // Delete record from Supabase database table
+                    const { error: dbErr } = await supabaseClient
+                        .from(config.tableName)
+                        .delete()
+                        .eq('id', car.id);
+
+                    if (dbErr) throw dbErr;
+
+                    // Filter out from local loaded array
+                    loadedSupabaseCars = loadedSupabaseCars.filter(c => c.id !== car.id);
+                } else if (car.is_mock) {
+                    // Remove from mock array
+                    const idx = MOCK_VEHICLES.findIndex(c => c.id === car.id);
+                    if (idx !== -1) MOCK_VEHICLES.splice(idx, 1);
+                }
+
+                showToast("ลบข้อมูลสินค้าและรูปภาพใน Storage เรียบร้อยแล้ว", "success");
+                closeDeleteModal();
+                renderGalleryGrid();
+            } catch (err) {
+                console.error("Delete error:", err);
+                showToast("เกิดข้อผิดพลาดในการลบ: " + err.message, "error");
+            } finally {
+                btnDel.disabled = false;
+                btnDel.innerHTML = `<i class="fa-solid fa-trash-can mr-1"></i> ลบข้อมูลและรูปภาพถาวร`;
+            }
         }
     </script>
 </body>
