@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TPZ COOMCAR — Gemini AI Vehicle Extractor & Supabase Flow</title>
+    <title>TPZ COOMCAR — Gemini AI Vehicle Extractor & Museum Gallery</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Font Awesome Icons -->
@@ -29,6 +29,7 @@
                         'apple-pearl': '#fafafc',
                         'apple-tile-1': '#272729',
                         'apple-tile-2': '#2a2a2c',
+                        'apple-tile-3': '#252527',
                         'apple-hairline': '#e0e0e0',
                         'apple-divider': '#f0f0f0'
                     },
@@ -41,7 +42,6 @@
     </script>
 
     <style>
-        /* Apple Strict Typography Rules using Anuphan Font */
         body {
             font-family: 'Anuphan', 'SF Pro Text', -apple-system, sans-serif;
         }
@@ -91,12 +91,12 @@
             transform: scale(0.95);
         }
 
-        /* Product Shadow */
+        /* Signature Apple Product Drop Shadow for Car Imagery */
         .apple-product-shadow {
             box-shadow: 0 5px 30px rgba(0, 0, 0, 0.22);
         }
 
-        /* Scrollbar Styling */
+        /* Custom Scrollbar */
         .apple-scrollbar::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -121,10 +121,21 @@
             </span>
             <span class="text-[#cccccc] hidden sm:inline">AI Flow Workspaces</span>
         </div>
+
+        <!-- Central Workspace View Switcher Tabs -->
+        <div class="flex items-center space-x-1 bg-[#1d1d1f] p-1 rounded-full border border-[#333333]">
+            <button id="tab-btn-create" onclick="switchView('create')" class="px-3 py-1 rounded-full text-[12px] font-medium transition-all bg-[#0066cc] text-white">
+                <i class="fa-solid fa-wand-magic-sparkles mr-1"></i> โพสต์ AI
+            </button>
+            <button id="tab-btn-gallery" onclick="switchView('gallery')" class="px-3 py-1 rounded-full text-[12px] font-medium transition-all text-[#cccccc] hover:text-white">
+                <i class="fa-solid fa-layer-group mr-1"></i> คลังรถยนต์
+            </button>
+        </div>
+
         <div class="flex items-center space-x-4">
             <button onclick="toggleSettingsModal()" class="apple-active-scale text-[#cccccc] hover:text-white transition-colors flex items-center gap-1.5 py-1 px-3 rounded-[8px] bg-[#1d1d1f]">
                 <i class="fa-solid fa-sliders text-[#2997ff]"></i>
-                <span>การตั้งค่า API & Database</span>
+                <span class="hidden md:inline">ตั้งค่า API & Database</span>
             </button>
         </div>
     </nav>
@@ -132,12 +143,12 @@
     <!-- 2. Sub-Nav Frosted Glass Bar (52px Height, Parchment 80% opacity blur) -->
     <header class="bg-[#f5f5f7]/80 backdrop-blur-md border-b border-[#e0e0e0] h-[52px] sticky top-[44px] z-30 px-6 flex items-center justify-between">
         <div class="flex items-center space-x-3">
-            <h1 class="apple-tagline text-[#1d1d1f] font-semibold">Gemini Vehicle Extractor</h1>
-            <span class="text-[12px] bg-[#e0e0e0] text-[#1d1d1f] px-2.5 py-0.5 rounded-full font-medium">Gem 1</span>
+            <h1 id="subnav-title" class="apple-tagline text-[#1d1d1f] font-semibold">Gemini Vehicle Extractor</h1>
+            <span id="subnav-badge" class="text-[12px] bg-[#e0e0e0] text-[#1d1d1f] px-2.5 py-0.5 rounded-full font-medium">AI Agent</span>
         </div>
         <div class="flex items-center space-x-3 text-[14px]">
             <span id="nav-status-indicator" class="text-[#7a7a7a] hidden md:inline">พร้อมประมวลผล</span>
-            <button onclick="runGeminiProcess()" class="bg-[#0066cc] hover:bg-[#0071e3] text-white px-4 py-1.5 rounded-full font-normal text-[14px] apple-active-scale">
+            <button id="subnav-action-btn" onclick="runGeminiProcess()" class="bg-[#0066cc] hover:bg-[#0071e3] text-white px-4 py-1.5 rounded-full font-normal text-[14px] apple-active-scale">
                 ประมวลผล AI
             </button>
         </div>
@@ -180,7 +191,7 @@
                     </div>
                     <div>
                         <label class="block apple-caption font-semibold text-[#1d1d1f] mb-1.5">Database Table Name</label>
-                        <input type="text" id="input-table-name" value="TPZCOOMCAR" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-3 text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#0066cc]">
+                        <input type="text" id="input-table-name" value="Information" class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-[11px] p-3 text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#0066cc]">
                     </div>
                 </div>
             </div>
@@ -192,8 +203,90 @@
         </div>
     </div>
 
-    <!-- 4. Main Hero Showcase Canvas (Pure White Tile) -->
-    <main class="flex-1 w-full max-w-[1440px] mx-auto">
+    <!-- Modal: Apple Product Spec Sheet Inspector -->
+    <div id="vehicle-detail-modal" class="fixed inset-0 bg-[#000000]/70 backdrop-blur-md z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+        <div class="bg-white border border-[#e0e0e0] w-full max-w-3xl rounded-[24px] overflow-hidden shadow-2xl relative my-8">
+            <div class="relative h-72 sm:h-96 bg-[#272729] flex items-center justify-center overflow-hidden">
+                <img id="detail-modal-img" src="" class="w-full h-full object-cover">
+                <button onclick="closeDetailModal()" class="absolute top-4 right-4 z-20 w-10 h-10 rounded-full bg-black/60 hover:bg-black text-white flex items-center justify-center apple-active-scale transition-colors backdrop-blur-sm">
+                    <i class="fa-solid fa-xmark text-[16px]"></i>
+                </button>
+                <div class="absolute bottom-4 left-4 bg-[#000000]/70 text-white px-3.5 py-1.5 rounded-full text-[12px] font-medium backdrop-blur-md flex items-center gap-2">
+                    <i class="fa-solid fa-rectangle-ad text-[#34c759]"></i>
+                    <span id="detail-modal-plate">-</span>
+                </div>
+            </div>
+            
+            <div class="p-6 sm:p-10 space-y-6">
+                <div class="border-b border-[#e0e0e0] pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+                    <div>
+                        <span id="detail-modal-brand" class="text-[13px] uppercase tracking-wider text-[#0066cc] font-semibold">BRAND</span>
+                        <h2 id="detail-modal-title" class="apple-hero-title text-[28px] sm:text-[34px] text-[#1d1d1f] mt-1">Car Title</h2>
+                        <p id="detail-modal-subtitle" class="apple-body text-[#7a7a7a] mt-1">Submodel / Specs</p>
+                    </div>
+                    <div class="text-left md:text-right">
+                        <p class="apple-caption text-[#7a7a7a]">ราคาขายสุทธิ</p>
+                        <p id="detail-modal-price" class="apple-hero-title text-[32px] text-[#0066cc] font-semibold">฿0</p>
+                    </div>
+                </div>
+
+                <!-- Spec Grid Badges -->
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                    <div class="p-3.5 bg-[#f5f5f7] rounded-[14px]">
+                        <p class="apple-caption text-[#7a7a7a] text-[12px]">ปีรถยนต์</p>
+                        <p id="detail-modal-year" class="apple-body-strong text-[#1d1d1f] mt-0.5">-</p>
+                    </div>
+                    <div class="p-3.5 bg-[#f5f5f7] rounded-[14px]">
+                        <p class="apple-caption text-[#7a7a7a] text-[12px]">เลขไมล์ (กม.)</p>
+                        <p id="detail-modal-mileage" class="apple-body-strong text-[#1d1d1f] mt-0.5">-</p>
+                    </div>
+                    <div class="p-3.5 bg-[#f5f5f7] rounded-[14px]">
+                        <p class="apple-caption text-[#7a7a7a] text-[12px]">ระบบเกียร์</p>
+                        <p id="detail-modal-trans" class="apple-body-strong text-[#1d1d1f] mt-0.5">-</p>
+                    </div>
+                    <div class="p-3.5 bg-[#f5f5f7] rounded-[14px]">
+                        <p class="apple-caption text-[#7a7a7a] text-[12px]">เชื้อเพลิง</p>
+                        <p id="detail-modal-fuel" class="apple-body-strong text-[#1d1d1f] mt-0.5">-</p>
+                    </div>
+                </div>
+
+                <!-- Installment Table -->
+                <div class="bg-[#fafafc] border border-[#e0e0e0] rounded-[18px] p-4">
+                    <h4 class="apple-caption font-semibold text-[#1d1d1f] mb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-calculator text-[#0066cc]"></i> ประมาณการตารางผ่อนชำระ
+                    </h4>
+                    <div class="grid grid-cols-3 gap-2 text-center">
+                        <div class="bg-white border border-[#e0e0e0] p-2.5 rounded-[12px]">
+                            <p class="apple-caption text-[11px] text-[#7a7a7a]">ผ่อน 48 งวด</p>
+                            <p id="detail-modal-i48" class="apple-body-strong text-[14px] text-[#1d1d1f] mt-1">-</p>
+                        </div>
+                        <div class="bg-white border border-[#e0e0e0] p-2.5 rounded-[12px]">
+                            <p class="apple-caption text-[11px] text-[#7a7a7a]">ผ่อน 60 งวด</p>
+                            <p id="detail-modal-i60" class="apple-body-strong text-[14px] text-[#1d1d1f] mt-1">-</p>
+                        </div>
+                        <div class="bg-white border border-[#e0e0e0] p-2.5 rounded-[12px]">
+                            <p class="apple-caption text-[11px] text-[#7a7a7a]">ผ่อน 72 งวด</p>
+                            <p id="detail-modal-i72" class="apple-body-strong text-[14px] text-[#1d1d1f] mt-1">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="apple-caption font-semibold text-[#1d1d1f] mb-2">คำบรรยายสเปกรถยนต์</h4>
+                    <p id="detail-modal-desc" class="apple-body text-[#1d1d1f] text-[14px] leading-relaxed whitespace-pre-wrap bg-[#f5f5f7] p-4 rounded-[14px] border border-[#e0e0e0]"></p>
+                </div>
+
+                <div class="flex justify-end pt-2">
+                    <button onclick="closeDetailModal()" class="px-6 py-2.5 bg-[#0066cc] text-white rounded-full text-[14px] apple-active-scale">
+                        ปิดหน้าต่าง
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIEW 1: VEHICLE CREATION & AI EXTRACTOR WORKSPACE -->
+    <main id="view-create-workspace" class="flex-1 w-full max-w-[1440px] mx-auto transition-opacity duration-300">
         
         <section class="bg-white py-12 px-6 sm:px-12 border-b border-[#e0e0e0]">
             <div class="max-w-4xl mx-auto text-center space-y-4">
@@ -212,7 +305,7 @@
             <div class="lg:col-span-6 bg-white p-6 sm:p-10 border-r border-[#e0e0e0] flex flex-col justify-between space-y-8">
                 <div class="space-y-8">
                     
-                    <!-- Section 1: รายละเอียดเบื้องต้น (ข้อความ + ไอคอนแนบรูปข้อมูลสเปกสไตล์ Gemini Chat) -->
+                    <!-- Section 1: รายละเอียดเบื้องต้น -->
                     <div class="space-y-3">
                         <div class="flex items-center justify-between border-b border-[#f0f0f0] pb-2">
                             <h2 class="apple-body-strong text-[19px] text-[#1d1d1f] flex items-center gap-2">
@@ -224,23 +317,20 @@
                         <!-- Gemini Interactive Chat-style Box -->
                         <div class="bg-[#fafafc] border border-[#e0e0e0] rounded-[18px] p-4 transition-colors focus-within:border-[#0066cc] focus-within:bg-white">
                             <label class="block apple-caption font-semibold text-[#1d1d1f] mb-2">รายละเอียดสเปกรถยนต์ (หรือพิมพ์สั้นๆ ให้ AI สรุปต่อ)</label>
-                            <textarea id="car-text-input" rows="5" placeholder="พิมพ์รายละเอียดสเปก หรือวางข้อความสั้นๆ ลงที่นี่..." 
+                            <textarea id="car-text-input" rows="5" placeholder="พิมพ์รายละเอียดสเปก เช่น ราคา ผ่อน ค่างวด หรือวางข้อความสั้นๆ ลงที่นี่..." 
                                       class="w-full bg-transparent text-[14px] text-[#1d1d1f] placeholder-[#7a7a7a] focus:outline-none resize-none apple-scrollbar leading-relaxed"></textarea>
                             
                             <!-- Gemini-style Action Bar inside the box -->
                             <div class="flex items-center justify-between pt-3 border-t border-[#f0f0f0] mt-2">
                                 <div class="flex items-center space-x-2">
-                                    <!-- Standard Apple Icon-only button (No text label) -->
                                     <button type="button" title="แนบรูปสเปก/เอกสาร" onclick="document.getElementById('spec-image-input').click()" 
                                             class="w-9 h-9 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#0066cc] flex items-center justify-center apple-active-scale transition-colors">
                                         <i class="fa-solid fa-paperclip text-[15px]"></i>
                                     </button>
-                                    <!-- ปุ่มคืนค่าเริ่มต้น -->
                                     <button type="button" title="คืนค่าเริ่มต้น" onclick="resetCarTextInput()" 
                                             class="w-9 h-9 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#7a7a7a] hover:text-[#0066cc] flex items-center justify-center apple-active-scale transition-colors">
                                         <i class="fa-solid fa-rotate-left text-[14px]"></i>
                                     </button>
-                                    <!-- ปุ่มล้างข้อความเพื่อเริ่มพิมพ์ใหม่ -->
                                     <button type="button" title="ล้างข้อความ" onclick="clearCarTextInput()" 
                                             class="w-9 h-9 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#7a7a7a] hover:text-[#ff3b30] flex items-center justify-center apple-active-scale transition-colors">
                                         <i class="fa-solid fa-trash-can text-[14px]"></i>
@@ -259,7 +349,6 @@
                                         <p class="apple-caption text-[11px] text-[#0066cc]">ภาพข้อมูลสเปกแนบแล้ว</p>
                                     </div>
                                 </div>
-                                <!-- Icon-only delete button -->
                                 <button type="button" title="ลบออก" onclick="removeSpecImage()" class="w-8 h-8 rounded-full bg-[#f5f5f7] hover:bg-[#e0e0e0] text-[#7a7a7a] hover:text-[#ff3b30] flex items-center justify-center apple-active-scale transition-colors">
                                     <i class="fa-solid fa-xmark text-[14px]"></i>
                                 </button>
@@ -272,11 +361,10 @@
                         <div class="flex items-center justify-between border-b border-[#f0f0f0] pb-2">
                             <h2 class="apple-body-strong text-[19px] text-[#1d1d1f] flex items-center gap-2">
                                 <span class="w-7 h-7 rounded-full bg-[#f5f5f7] flex items-center justify-center text-[12px] text-[#0066cc] font-bold">2</span>
-                                <span>เพิ่มรูปภาพรถยนต์ทั้งหมด</span>
+                                <span>เพิ่มรูปภาพรถยนต์</span>
                             </h2>
                             <div class="flex items-center space-x-2">
                                 <span id="image-counter-badge" class="apple-caption bg-[#f5f5f7] text-[#1d1d1f] px-3 py-1 rounded-full font-medium">0 / 15 รูป</span>
-                                <!-- Icon-only add button -->
                                 <button type="button" title="เพิ่มรูปภาพ" onclick="document.getElementById('file-input').click()" class="w-8 h-8 rounded-full bg-[#0066cc] hover:bg-[#0071e3] text-white flex items-center justify-center apple-active-scale shadow-sm transition-colors">
                                     <i class="fa-solid fa-plus text-[14px]"></i>
                                 </button>
@@ -316,12 +404,12 @@
                     <!-- AI Loading Spinner -->
                     <div id="ai-loading" class="hidden py-20 text-center space-y-4">
                         <div class="inline-block animate-spin rounded-full h-10 w-10 border-2 border-[#2997ff] border-t-transparent"></div>
-                        <p id="ai-loading-text" class="apple-body text-[#2997ff]">Gemini AI กำลังวิเคราะห์ข้อมูลและรูปภาพ...</p>
+                        <p id="ai-loading-text" class="apple-body text-[#2997ff]">Gemini AI กำลังวิเคราะห์สเปก สแกนทะเบียนรถ และจัดโครงสร้าง...</p>
                     </div>
 
                     <!-- AI Empty State Placeholder -->
                     <div id="ai-empty-state" class="py-24 text-center text-[#cccccc] space-y-3">
-                        <i class="fa-solid fa-microchip text-4xl text-[#7a7a7a]"></i>
+                        <i class="fa-solid fa-id-card text-4xl text-[#7a7a7a]"></i>
                         <p class="apple-body text-[#cccccc]">กรอกรายละเอียด แนบรูปภาพ แล้วกด "ประมวลผลด้วย Gemini AI"</p>
                     </div>
 
@@ -332,7 +420,7 @@
                         </div>
                         <div>
                             <h3 class="apple-body-strong text-white text-[18px]">เซิร์ฟเวอร์ Gemini มีผู้ใช้งานจำนวนมากชั่วคราว</h3>
-                            <p class="apple-caption text-[#cccccc] mt-1 max-w-sm mx-auto">ระบบของ Google Gemini กำลังรับโหลดสูงชั่วคราว กรุณารอประมาณ 3-5 วินาทีแล้วลองอีกครั้ง</p>
+                            <p class="apple-caption text-[#cccccc] mt-1 max-w-sm mx-auto">ระบบกำลังรับโหลดสูง กรุณารอประมาณ 3-5 วินาทีแล้วลองใหม่อีกครั้ง</p>
                         </div>
                         <button onclick="runGeminiProcess()" class="px-6 py-2.5 bg-[#0066cc] hover:bg-[#0071e3] text-white rounded-full text-[14px] font-medium apple-active-scale inline-flex items-center gap-2">
                             <i class="fa-solid fa-rotate-right"></i>
@@ -342,21 +430,38 @@
 
                     <!-- AI Result Output Display -->
                     <div id="ai-result-container" class="hidden space-y-4">
-                        <div class="bg-[#1d1d1f] border border-[#333333] rounded-[14px] p-5 font-mono text-[13px] text-[#ffffff] leading-relaxed whitespace-pre-wrap max-h-[380px] overflow-y-auto apple-scrollbar" id="ai-text-output"></div>
-
-                        <!-- Odometer Verified Card with Apple Product Shadow -->
-                        <div class="bg-[#2a2a2c] border border-[#333333] rounded-[14px] p-4 flex items-center justify-between apple-product-shadow">
-                            <div class="flex items-center space-x-3">
-                                <div class="w-10 h-10 rounded-full bg-[#2997ff]/10 flex items-center justify-center">
-                                    <i class="fa-solid fa-gauge-high text-[#2997ff] text-lg"></i>
+                        
+                        <!-- Verified License Plate & Odometer Twin Cards -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <div class="bg-[#2a2a2c] border border-[#333333] rounded-[14px] p-4 flex items-center justify-between apple-product-shadow">
+                                <div class="flex items-center space-x-3 overflow-hidden">
+                                    <div class="w-10 h-10 rounded-full bg-[#34c759]/10 flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-rectangle-ad text-[#34c759] text-lg"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <p class="apple-caption text-[#cccccc]">ทะเบียนรถ (Scanned)</p>
+                                        <p id="license-plate-val" class="apple-body-strong text-white text-[17px] truncate">-</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <p class="apple-caption text-[#cccccc]">เลขไมล์ที่ตรวจพบจากรูปเรือนไมล์</p>
-                                    <p id="odometer-val" class="apple-body-strong text-white text-[19px]">-</p>
-                                </div>
+                                <span class="apple-caption bg-[#34c759]/20 text-[#34c759] px-2.5 py-1 rounded-full font-semibold border border-[#34c759]/30 text-[11px] shrink-0">Plate OCR</span>
                             </div>
-                            <span class="apple-caption bg-[#2997ff]/20 text-[#2997ff] px-3 py-1 rounded-full font-semibold border border-[#2997ff]/30">AI Verified</span>
+
+                            <div class="bg-[#2a2a2c] border border-[#333333] rounded-[14px] p-4 flex items-center justify-between apple-product-shadow">
+                                <div class="flex items-center space-x-3 overflow-hidden">
+                                    <div class="w-10 h-10 rounded-full bg-[#2997ff]/10 flex items-center justify-center shrink-0">
+                                        <i class="fa-solid fa-gauge-high text-[#2997ff] text-lg"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <p class="apple-caption text-[#cccccc]">เลขไมล์ที่ตรวจพบ</p>
+                                        <p id="odometer-val" class="apple-body-strong text-white text-[17px] truncate">-</p>
+                                    </div>
+                                </div>
+                                <span class="apple-caption bg-[#2997ff]/20 text-[#2997ff] px-2.5 py-1 rounded-full font-semibold border border-[#2997ff]/30 text-[11px] shrink-0">AI Verified</span>
+                            </div>
                         </div>
+
+                        <!-- Formatted Result Code Area -->
+                        <div class="bg-[#1d1d1f] border border-[#333333] rounded-[14px] p-5 font-mono text-[13px] text-[#ffffff] leading-relaxed whitespace-pre-wrap max-h-[340px] overflow-y-auto apple-scrollbar" id="ai-text-output"></div>
                     </div>
                 </div>
 
@@ -364,12 +469,69 @@
                 <div id="confirm-section" class="pt-6 border-t border-[#333333] mt-8 hidden">
                     <button id="btn-save-supabase" onclick="saveToSupabaseFlow()" class="w-full bg-[#2997ff] hover:bg-[#0071e3] text-white font-normal py-3.5 px-6 rounded-full text-[17px] flex items-center justify-center space-x-2 apple-active-scale shadow-lg">
                         <i class="fa-solid fa-cloud-arrow-up text-[15px]"></i>
-                        <span>บันทึกข้อมูลและอัปโหลดรูปภาพเข้า Supabase</span>
+                        <span>บันทึกลง public."Information" ใน Supabase</span>
                     </button>
                 </div>
             </div>
 
         </div>
+
+    </main>
+
+    <!-- VIEW 2: NEW APPLE MUSEUM GALLERY & INVENTORY SHOWCASE -->
+    <main id="view-gallery-workspace" class="flex-1 w-full hidden transition-opacity duration-300">
+        
+        <!-- Apple Museum Gallery Hero Section -->
+        <section class="bg-white py-14 px-6 sm:px-12 border-b border-[#e0e0e0]">
+            <div class="max-w-5xl mx-auto text-center space-y-4">
+                <p class="text-[14px] text-[#0066cc] font-semibold tracking-wider uppercase">TPZ COOMCAR Showroom</p>
+                <h1 class="apple-hero-title text-[#1d1d1f] max-sm:text-[36px]">คลังรถยนต์ระดับพรีเมียม</h1>
+                <p class="apple-body text-[#7a7a7a] max-w-2xl mx-auto">
+                    สำรวจรายการรถยนต์ทั้งหมดที่ผ่านการวิเคราะห์ AI และจัดทำสเปกอย่างประณีต
+                </p>
+
+                <!-- Dynamic Control Strip -->
+                <div class="pt-6 flex flex-wrap items-center justify-center gap-3">
+                    <div class="relative w-full max-w-md">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-[#7a7a7a] text-[14px]"></i>
+                        <input type="text" id="gallery-search-input" onkeyup="filterGalleryItems()" placeholder="ค้นหารุ่น ยี่ห้อ ทะเบียนรถ หรือสเปก..." 
+                               class="w-full bg-[#f5f5f7] border border-[#e0e0e0] rounded-full pl-11 pr-4 py-2.5 text-[14px] text-[#1d1d1f] focus:outline-none focus:border-[#0066cc] focus:bg-white transition-all">
+                    </div>
+                    
+                    <button id="toggle-demo-btn" onclick="toggleDemoData()" class="px-4 py-2.5 rounded-full border border-[#e0e0e0] bg-[#fafafc] hover:bg-[#f5f5f7] text-[13px] text-[#1d1d1f] flex items-center gap-2 apple-active-scale">
+                        <i class="fa-solid fa-[#0066cc] fa-vial"></i>
+                        <span id="demo-toggle-label">ซ่อนตัวอย่าง Mock Data (2 รายการ)</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Museum Gallery Exhibition Grid -->
+        <section class="py-12 px-6 sm:px-12 max-w-[1440px] mx-auto">
+            
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h2 class="apple-display-lg text-[28px] text-[#1d1d1f]">รายการรถยนต์ทั้งหมด</h2>
+                    <p class="apple-caption text-[#7a7a7a]">เรียงตามลำดับล่าสุดที่ได้รับการลงทะเบียนเข้าสู่ระบบ</p>
+                </div>
+                <span id="gallery-count-badge" class="px-3.5 py-1 rounded-full bg-white border border-[#e0e0e0] text-[#0066cc] font-semibold text-[13px] shadow-xs">
+                    กำลังโหลด...
+                </span>
+            </div>
+
+            <!-- Vehicles Container Grid -->
+            <div id="gallery-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Dynamically Populated with Real Supabase Data + Initial 2 Mock Cars -->
+            </div>
+
+            <!-- Empty State for Gallery Search -->
+            <div id="gallery-empty-state" class="hidden py-24 text-center space-y-4 bg-white rounded-[24px] border border-[#e0e0e0]">
+                <i class="fa-solid fa-car-tunnel text-5xl text-[#d2d2d7]"></i>
+                <h3 class="apple-body-strong text-[21px] text-[#1d1d1f]">ไม่พบข้อมูลรถยนต์ตรงกับเงื่อนไขค้นหา</h3>
+                <p class="apple-caption text-[#7a7a7a]">ลองล้างคำค้นหา หรือใช้ปุ่ม "โพสต์ AI" ด้านบนเพื่อเพิ่มรายการใหม่</p>
+            </div>
+
+        </section>
 
     </main>
 
@@ -380,7 +542,7 @@
             <div class="flex space-x-6">
                 <a href="#" onclick="toggleSettingsModal(); return false;" class="text-[#0066cc] hover:underline">ตั้งค่าระบบ</a>
                 <span>|</span>
-                <span class="text-[#1d1d1f]">System Status: Operational</span>
+                <span class="text-[#1d1d1f]">Schema: public."Information"</span>
             </div>
         </div>
     </footer>
@@ -393,16 +555,82 @@
         let draggedSlotIndex = null;
         let targetSlotForPick = null;
 
-        // =========================================================================
-        //  ตั้งค่า API & Supabase แบบถาวร (ใส่ Key จริงของคุณตรงนี้ได้ทันที)
-        // =========================================================================
-        const PERMANENT_GEMINI_KEY = ""; // ใส่ Gemini API Key ถาวร เช่น "AIzaSy..."
-        const PERMANENT_SUPABASE_URL = ""; // ใส่ Supabase URL ถาวร เช่น "https://xxxx.supabase.co"
-        const PERMANENT_SUPABASE_KEY = ""; // ใส่ Supabase Anon Key ถาวร เช่น "eyJhbGci..."
-        const DEFAULT_BUCKET_NAME = "car-images";
-        const DEFAULT_TABLE_NAME = "TPZCOOMCAR";
+        // Current Active View State ('create' or 'gallery')
+        let currentView = 'create';
+        let showDemoData = true; // Show initial 2 mock data until user posts real data or toggles off
 
-        // Configuration State - ดึงจาก LocalStorage หากไม่มีจะใช้ค่าถาวรด้านบน
+        // Mock Cars Data (2 Premium Sample Vehicles independent of Supabase)
+        const MOCK_VEHICLES = [
+            {
+                id: 'mock-1',
+                is_mock: true,
+                license_plate: '3กข 8899 กรุงเทพมหานคร',
+                brand: 'Porsche',
+                model: 'Macan',
+                submodel: '2.0 GTS Look Package',
+                year: '2023',
+                category: 'SUV / Crossover',
+                transmission: 'PDK 7-Speed',
+                exterior_color: 'Chalk Grey (เทาพรีเมียม)',
+                interior_color: 'Black Leather Red Stitching',
+                mileage: '18,500',
+                engine_cc: '1,984 cc Turbo 265 HP',
+                fuel_type: 'Benzine 95 / E20',
+                seats: '5 ที่นั่ง',
+                price: 3890000,
+                down_payment: 389000,
+                installment_48: 84500,
+                installment_60: 69800,
+                installment_72: 61200,
+                title: 'Porsche Macan 2.0 GTS Look (ปี 2023)',
+                description: '*สภาพนางฟ้า ประวัติศูนย์ครบถ้วน ดำเนินการเช็ก 111 จุดเรียบร้อยแล้ว\n- ทะเบียน : 3กข 8899 กรุงเทพมหานคร\n- เครื่องยนต์ : 2.0 Turbo 265 แรงม้า\n- หลังคา Panoramic Glass Roof\n- ชุดแต่ง GTS Aero Package รอบคัน\n- ล้อแม็ก Porsche Sport Classic 21 นิ้ว',
+                images: [
+                    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=1200&q=80',
+                    'https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&w=1200&q=80'
+                ],
+                created_at: new Date(Date.now() - 3600000 * 5).toISOString()
+            },
+            {
+                id: 'mock-2',
+                is_mock: true,
+                license_plate: 'กข 5544 เชียงใหม่',
+                brand: 'BMW',
+                model: '320d',
+                submodel: 'M Sport (G20) LCI',
+                year: '2022',
+                category: 'Sedan',
+                transmission: 'Automatic 8-Speed Steptronic',
+                exterior_color: 'Alpine White',
+                interior_color: 'Mocha Vernasca Leather',
+                mileage: '32,100',
+                engine_cc: '2.0 Diesel TwinPower Turbo 190 HP',
+                fuel_type: 'Diesel',
+                seats: '5 ที่นั่ง',
+                price: 1890000,
+                down_payment: 189000,
+                installment_48: 41200,
+                installment_60: 34100,
+                installment_72: 29800,
+                title: 'BMW 320d M Sport LCI (ปี 2022)',
+                description: '*มือเดียวออกห้าง BSI เหลือถึงปี 2027 วิ่งน้อยดูแลอย่างดี\n- ทะเบียน : กข 5544 เชียงใหม่\n- เครื่องยนต์ดีเซล ประหยัดน้ำมันสูงสุด 21 กม./ลิตร\n- ชุดแต่ง M Aerodynamics รอบคัน\n- หน้าจอ BMW Curved Display + iDrive 8',
+                images: [
+                    'https://images.unsplash.com/photo-1555215695-3004980adade?auto=format&fit=crop&w=1200&q=80',
+                    'https://images.unsplash.com/photo-1580273916550-e323be2ae537?auto=format&fit=crop&w=1200&q=80'
+                ],
+                created_at: new Date(Date.now() - 3600000 * 24).toISOString()
+            }
+        ];
+
+        let loadedSupabaseCars = [];
+
+        // Permanent Keys fallback
+        const PERMANENT_GEMINI_KEY = "";
+        const PERMANENT_SUPABASE_URL = "";
+        const PERMANENT_SUPABASE_KEY = "";
+        const DEFAULT_BUCKET_NAME = "car-images";
+        const DEFAULT_TABLE_NAME = "Information";
+
+        // Configuration State
         let config = {
             geminiKey: localStorage.getItem('gemini_key') || PERMANENT_GEMINI_KEY,
             supabaseUrl: localStorage.getItem('supabase_url') || PERMANENT_SUPABASE_URL,
@@ -410,8 +638,6 @@
             bucketName: localStorage.getItem('bucket_name') || DEFAULT_BUCKET_NAME,
             tableName: localStorage.getItem('table_name') || DEFAULT_TABLE_NAME
         };
-
-        const DEFAULT_CAR_TEXT = ``;
 
         function resetCarTextInput() {
             document.getElementById('car-text-input').value = '';
@@ -424,15 +650,11 @@
         }
 
         function resetFormAfterSave() {
-            // ล้างช่องรายละเอียดสเปกรถยนต์เป็นค่าว่างพร้อมใช้งานคันต่อไป
             document.getElementById('car-text-input').value = '';
-            
-            // ล้างรูปภาพและไฟล์สเปกที่เลือกไว้
             removeSpecImage();
             slotFiles = new Array(15).fill(null);
             renderSlotsGrid();
 
-            // รีเซ็ตสถานะหน้าจอผลลัพธ์ AI
             parsedCarData = null;
             document.getElementById('ai-result-container').classList.add('hidden');
             document.getElementById('confirm-section').classList.add('hidden');
@@ -449,11 +671,50 @@
             document.getElementById('input-table-name').value = config.tableName;
 
             renderSlotsGrid();
+            fetchSupabaseGallery();
 
             if (!config.geminiKey || !config.supabaseUrl || !config.supabaseKey) {
                 showToast("โปรดระบุ Gemini API Key และข้อมูล Supabase ในเมนูตั้งค่าก่อนเริ่มใช้งาน", "warning");
             }
         };
+
+        // Tab Workspace View Switcher
+        function switchView(target) {
+            currentView = target;
+            const createW = document.getElementById('view-create-workspace');
+            const galleryW = document.getElementById('view-gallery-workspace');
+            const btnCreate = document.getElementById('tab-btn-create');
+            const btnGallery = document.getElementById('tab-btn-gallery');
+            const subTitle = document.getElementById('subnav-title');
+            const subBadge = document.getElementById('subnav-badge');
+            const subBtn = document.getElementById('subnav-action-btn');
+
+            if (target === 'create') {
+                createW.classList.remove('hidden');
+                galleryW.classList.add('hidden');
+
+                btnCreate.className = "px-3 py-1 rounded-full text-[12px] font-medium transition-all bg-[#0066cc] text-white";
+                btnGallery.className = "px-3 py-1 rounded-full text-[12px] font-medium transition-all text-[#cccccc] hover:text-white";
+
+                subTitle.innerText = "Gemini Vehicle Extractor";
+                subBadge.innerText = "AI Agent";
+                subBtn.innerText = "ประมวลผล AI";
+                subBtn.onclick = runGeminiProcess;
+            } else {
+                createW.classList.add('hidden');
+                galleryW.classList.remove('hidden');
+
+                btnGallery.className = "px-3 py-1 rounded-full text-[12px] font-medium transition-all bg-[#0066cc] text-white";
+                btnCreate.className = "px-3 py-1 rounded-full text-[12px] font-medium transition-all text-[#cccccc] hover:text-white";
+
+                subTitle.innerText = "คลังรถยนต์ TPZ COOMCAR";
+                subBadge.innerText = "Gallery";
+                subBtn.innerText = "สร้างโพสต์ใหม่";
+                subBtn.onclick = () => switchView('create');
+
+                fetchSupabaseGallery();
+            }
+        }
 
         function renderSlotsGrid() {
             const grid = document.getElementById('image-slots-grid');
@@ -474,7 +735,6 @@
                 slotCard.setAttribute('data-slot-index', i);
                 slotCard.draggable = !!file;
 
-                // Drag & Drop handlers with preventDefault to avoid browser reload
                 slotCard.ondragstart = (e) => {
                     if (!file) return;
                     draggedSlotIndex = i;
@@ -498,7 +758,6 @@
                     e.stopPropagation();
                     slotCard.classList.remove('border-[#0066cc]', 'bg-[#0066cc]/5');
 
-                    // Support dropping external files onto specific slot
                     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                         const droppedFile = e.dataTransfer.files[0];
                         if (droppedFile.type.startsWith('image/')) {
@@ -508,7 +767,6 @@
                         return;
                     }
 
-                    // Swap slot files freely
                     if (draggedSlotIndex !== null && draggedSlotIndex !== i) {
                         const temp = slotFiles[i];
                         slotFiles[i] = slotFiles[draggedSlotIndex];
@@ -524,7 +782,6 @@
                 };
 
                 if (file) {
-                    // Slot containing image preview
                     const reader = new FileReader();
                     reader.onload = function(evt) {
                         slotCard.innerHTML = `
@@ -542,7 +799,6 @@
                     };
                     reader.readAsDataURL(file);
                 } else {
-                    // Empty slot
                     slotCard.onclick = (e) => {
                         if (e.target.tagName.toLowerCase() === 'button' || e.target.closest('button')) return;
                         openSingleSlotPicker(i);
@@ -614,7 +870,7 @@
             config.supabaseUrl = document.getElementById('input-supabase-url').value.trim();
             config.supabaseKey = document.getElementById('input-supabase-key').value.trim();
             config.bucketName = document.getElementById('input-bucket-name').value.trim() || 'car-images';
-            config.tableName = document.getElementById('input-table-name').value.trim() || 'TPZCOOMCAR';
+            config.tableName = document.getElementById('input-table-name').value.trim() || 'Information';
 
             localStorage.setItem('gemini_key', config.geminiKey);
             localStorage.setItem('supabase_url', config.supabaseUrl);
@@ -624,6 +880,7 @@
 
             toggleSettingsModal();
             showToast("บันทึกการตั้งค่าเรียบร้อยแล้ว", "success");
+            fetchSupabaseGallery();
         }
 
         function handleSpecImageSelect(e) {
@@ -661,6 +918,10 @@
         }
 
         async function runGeminiProcess() {
+            if (currentView !== 'create') {
+                switchView('create');
+            }
+
             if (!config.geminiKey) {
                 showToast("กรุณาระบุ Gemini API Key ในเมนูตั้งค่าก่อนเริ่มใช้งาน", "error");
                 toggleSettingsModal();
@@ -682,8 +943,8 @@
             document.getElementById('ai-loading').classList.remove('hidden');
             
             document.getElementById('ai-status-badge').className = "apple-caption px-3 py-1 rounded-full bg-[#2997ff]/20 text-[#2997ff] border border-[#2997ff]/30 animate-pulse";
-            document.getElementById('ai-status-badge').innerText = "กำลังวิเคราะห์...";
-            document.getElementById('nav-status-indicator').innerText = "Gemini กำลังประมวลผลสเปกและรูปภาพ...";
+            document.getElementById('ai-status-badge').innerText = "กำลังสแกน & วิเคราะห์...";
+            document.getElementById('nav-status-indicator').innerText = "Gemini กำลังสแกนป้ายทะเบียนและสเปกรถ...";
 
             try {
                 let imageParts = [];
@@ -696,30 +957,53 @@
                 const vehiclePhotoParts = await Promise.all(activeSlotFiles.map(file => fileToBase64Part(file)));
                 imageParts = [...imageParts, ...vehiclePhotoParts];
 
-                const systemInstruction = `คุณคือ "AI ผู้เชี่ยวชาญด้านการจัดทำข้อมูลสเปกรถยนต์มือสอง" สำหรับระบบ AI Flow Process
+                const systemInstruction = `คุณคือ "AI ผู้เชี่ยวชาญด้านการจัดทำข้อมูลสเปกรถยนต์และสแกนป้ายทะเบียน" สำหรับระบบ TPZ COOMCAR Auto-Mapping
 
 [หน้าที่ของคุณ]
-1. อ่านและวิเคราะห์ข้อมูลสเปกรถยนต์จากข้อความและรูปภาพข้อมูลสเปก (ถ้ามี) ที่ผู้ใช้ส่งมา
-2. วิเคราะห์รูปภาพรถยนต์ทั้งหมดที่แนบมา (รูปถ่ายภายนอก ภายใน และหน้าปัดเรือนไมล์) เพื่อตรวจสอบรายละเอียดสเปกและอ่านค่าเลขไมล์ (Odometer)
-3. นำข้อมูลทั้งหมดมาจัดระเบียบ แปล และสรุปให้อยู่ในรูปแบบโครงสร้างหัวข้อภาษาไทยที่กำหนดไว้อย่างถูกต้อง 100%
+1. อ่านและสแกนรูปภาพรถยนต์ทุกรูปที่ส่งมาอย่างละเอียด เพื่อค้นหา "ป้ายทะเบียนรถยนต์" (License Plate) ทั้งป้ายหน้าและป้ายหลัง เช่น "3กข 1234 กรุงเทพมหานคร", "กข 9999", "1กก 5678" เป็นต้น
+2. อ่านและวิเคราะห์ข้อมูลสเปกรถยนต์จากข้อความและรูปภาพเอกสารสเปก
+3. อ่านค่าเลขไมล์ (Odometer) จากรูปถ่ายเรือนไมล์
+4. สกัดและวิเคราะห์จัดเก็บข้อมูลให้อยู่ในโครงสร้าง JSON สำหรับนำไป Mapping ลงในตาราง public."Information" ของ Supabase
 
-[กฎเหล็กและเงื่อนไขที่ต้องปฏิบัติตามอย่างเคร่งครัด]
-1. ภาษา: ต้องตอบเป็นภาษาไทยที่ถูกต้อง เป็นทางการ และกระชับ
-2. โครงสร้างหัวข้อ: ต้องใช้โครงสร้าง 3 หัวข้อหลัก และหัวข้อย่อยตามที่กำหนดไว้ข้างล่างนี้เท่านั้น
-   ⚠️ ห้ามแก้ไขชื่อหัวข้อ ห้ามตัดหัวข้อออก และห้ามเพิ่มหัวข้อใหม่เด็ดขาด!
-3. การระบุเลขไมล์: ให้ยึดข้อมูลเลขไมล์จากภาพถ่ายหน้าปัดเรือนไมล์เป็นหลัก หากในภาพเห็นชัดเจน ให้นำค่านั้นมาใส่ที่หัวข้อ "เลขไมล์ (กม.)"
-4. การจัดการข้อมูลที่ไม่มี: หากหัวข้อใดไม่มีข้อมูลทั้งจากข้อความและรูปภาพ ให้ระบุว่า "-" เท่านั้น ห้ามเดาหรือสร้างข้อมูลเท็จ
+[กฎเหล็กและเงื่อนไข]
+1. ทะเบียนรถ (license_plate): ต้องสแกนและระบุเลขทะเบียนพร้อมจังหวัด (ถ้ามองเห็น) เช่น "3กข 1234 กรุงเทพมหานคร" หากมองไม่เห็นหรือไม่มี ให้ระบุ "-"
+2. การคำนวณและดึงตัวเลข: สำหรับราคา (price), เงินดาวน์ (down_payment), ผ่อน 48/60/72 เดือน ให้แปลงเป็นตัวเลข (number) เท่านั้น หากไม่มีให้ใส่ null
+3. สรุปรายละเอียด (description): สรุปสเปกและจุดเด่นของรถยนต์ให้อ่านง่าย สไตล์การขายรถมือสองระดับพรีเมียม
+4. จุดเด่น (highlight_options): ระบุอาร์เรย์ข้อความสั้นๆ 3-6 ข้อ
 
 [โครงสร้าง JSON ที่ต้องตอบกลับมาเท่านั้น]
 {
+  "license_plate": "",
+  "brand": "",
+  "model": "",
+  "submodel": "",
+  "year": "",
+  "category": "",
+  "transmission": "",
+  "exterior_color": "",
+  "interior_color": "",
+  "mileage": "",
+  "engine_cc": "",
+  "fuel_type": "",
+  "seats": "",
+  "price": null,
+  "down_payment": null,
+  "installment_48": null,
+  "installment_60": null,
+  "installment_72": null,
+  "title": "",
+  "description": "",
+  "highlight_options": [],
+  "vin": "",
+  "engine_number": "",
   "general_info": {
+    "ทะเบียนรถ": "",
     "ประเภท": "",
     "ยี่ห้อ": "",
     "รุ่นรถยนต์": "",
     "ปีจดทะเบียน": "",
     "สีตัวถัง": "",
-    "จำนวนที่นั่ง": "",
-    "ประตู": ""
+    "จำนวนที่นั่ง": ""
   },
   "engine_and_transmission": {
     "เลขไมล์ (กม.)": "",
@@ -727,17 +1011,9 @@
     "ขนาดเครื่องยนต์": "",
     "ระบบขับเคลื่อน": "",
     "เชื้อเพลิง": "",
-    "เกียร์": "",
-    "จำนวนเกียร์": "",
-    "ระบบพวงมาลัย": ""
+    "เกียร์": ""
   },
-  "wheels_and_tires": {
-    "ขนาดล้อหน้า": "",
-    "ขนาดล้อหลัง": "",
-    "ขอบล้อหน้า": "",
-    "ขอบล้อหลัง": ""
-  },
-  "formatted_text": "*รายละเอียดทั่วไป\\n- ประเภท : [ข้อมูล]\\n- ยี่ห้อ : [ข้อมูล]\\n- รุ่นรถยนต์ : [ข้อมูล]\\n- ปีจดทะเบียน : [ข้อมูล]\\n- สีตัวถัง : [ข้อมูล]\\n- จำนวนที่นั่ง : [ข้อมูล]\\n- ประตู : [ข้อมูล]\\n\\n*เครื่องยนต์และเกียร์\\n- เลขไมล์ (กม.) : [ข้อมูล]\\n- เครื่องยนต์ : [ข้อมูล]\\n- ขนาดเครื่องยนต์ : [ข้อมูล]\\n- ระบบขับเคลื่อน : [ข้อมูล]\\n- เชื้อเพลิง : [ข้อมูล]\\n- เกียร์ : [ข้อมูล]\\n- จำนวนเกียร์ : [ข้อมูล]\\n- ระบบพวงมาลัย : [ข้อมูล]\\n\\n*ขล้อและบยาง\\n- ขนาดล้อหน้า : [ข้อมูล]\\n- ขนาดล้อหลัง : [ข้อมูล]\\n- ขอบล้อหน้า : [ข้อมูล]\\n- ขอบล้อหลัง : [ข้อมูล]"
+  "formatted_text": "*รายละเอียดทั่วไป\\n- ทะเบียนรถ : [ข้อมูล]\\n- ยี่ห้อ : [ข้อมูล]\\n- รุ่น : [ข้อมูล]\\n- ปี : [ข้อมูล]\\n- สี : [ข้อมูล]\\n\\n*เครื่องยนต์และเกียร์\\n- เลขไมล์ : [ข้อมูล]\\n- เกียร์ : [ข้อมูล]\\n- เชื้อเพลิง : [ข้อมูล]"
 }`;
 
                 const payload = {
@@ -812,17 +1088,18 @@
                 parsedCarData = JSON.parse(jsonText);
 
                 document.getElementById('ai-text-output').innerText = parsedCarData.formatted_text || formatCarDataText(parsedCarData);
-                document.getElementById('odometer-val').innerText = parsedCarData.engine_and_transmission?.["เลขไมล์ (กม.)"] || "-";
+                document.getElementById('license-plate-val').innerText = parsedCarData.license_plate || parsedCarData.general_info?.["ทะเบียนรถ"] || "-";
+                document.getElementById('odometer-val').innerText = parsedCarData.mileage || parsedCarData.engine_and_transmission?.["เลขไมล์ (กม.)"] || "-";
 
                 document.getElementById('ai-loading').classList.add('hidden');
                 document.getElementById('ai-result-container').classList.remove('hidden');
                 document.getElementById('confirm-section').classList.remove('hidden');
 
                 document.getElementById('ai-status-badge').className = "apple-caption px-3 py-1 rounded-full bg-[#34c759]/20 text-[#34c759] border border-[#34c759]/30";
-                document.getElementById('ai-status-badge').innerText = "วิเคราะห์สำเร็จ";
-                document.getElementById('nav-status-indicator').innerText = "พร้อมบันทึกเข้า Supabase";
+                document.getElementById('ai-status-badge').innerText = "สแกนสำเร็จ";
+                document.getElementById('nav-status-indicator').innerText = "พร้อมบันทึกลง public.\"Information\"";
 
-                showToast("Gemini สรุปข้อมูลสำเร็จแล้ว กรุณาตรวจสอบก่อนกดบันทึก", "success");
+                showToast("สแกนทะเบียนรถและวิเคราะห์สเปกสำเร็จแล้ว!", "success");
 
             } catch (err) {
                 console.error(err);
@@ -845,7 +1122,8 @@
         }
 
         function formatCarDataText(data) {
-            let txt = "*รายละเอียดทั่วไป\n";
+            let txt = `*ทะเบียนรถ : ${data.license_plate || data.general_info?.["ทะเบียนรถ"] || '-'}\n\n`;
+            txt += "*รายละเอียดทั่วไป\n";
             for (let [k, v] of Object.entries(data.general_info || {})) {
                 txt += `- ${k} : ${v || '-'}\n`;
             }
@@ -853,9 +1131,8 @@
             for (let [k, v] of Object.entries(data.engine_and_transmission || {})) {
                 txt += `- ${k} : ${v || '-'}\n`;
             }
-            txt += "\n*ขล้อและบยาง\n";
-            for (let [k, v] of Object.entries(data.wheels_and_tires || {})) {
-                txt += `- ${k} : ${v || '-'}\n`;
+            if (data.description) {
+                txt += `\n*คำบรรยายสินค้า\n${data.description}\n`;
             }
             return txt;
         }
@@ -874,7 +1151,7 @@
 
             const btnSave = document.getElementById('btn-save-supabase');
             btnSave.disabled = true;
-            btnSave.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-[15px]"></i> <span>กำลังอัปโหลดรูปภาพและบันทึกข้อมูล...</span>`;
+            btnSave.innerHTML = `<i class="fa-solid fa-circle-notch animate-spin text-[15px]"></i> <span>กำลังอัปโหลดรูปภาพและแมปข้อมูล...</span>`;
 
             try {
                 const { createClient } = supabase;
@@ -915,13 +1192,37 @@
 
                 showToast("กำลังบันทึกข้อมูลเข้าตาราง " + config.tableName + "...", "info");
 
+                const rawText = document.getElementById('car-text-input').value.trim();
+
+                // Payload auto-mapping directly matching public."Information" columns
                 const recordPayload = {
-                    formatted_text: parsedCarData.formatted_text || formatCarDataText(parsedCarData),
-                    general_info: parsedCarData.general_info,
-                    engine_and_transmission: parsedCarData.engine_and_transmission,
-                    wheels_and_tires: parsedCarData.wheels_and_tires,
-                    odometer: parsedCarData.engine_and_transmission?.["เลขไมล์ (กม.)"] || "-",
-                    image_urls: imageUrls,
+                    license_plate: parsedCarData.license_plate || parsedCarData.general_info?.["ทะเบียนรถ"] || "-",
+                    brand: parsedCarData.brand || parsedCarData.general_info?.["ยี่ห้อ"] || "-",
+                    model: parsedCarData.model || parsedCarData.general_info?.["รุ่นรถยนต์"] || "-",
+                    submodel: parsedCarData.submodel || "-",
+                    year: parsedCarData.year || parsedCarData.general_info?.["ปีจดทะเบียน"] || "-",
+                    category: parsedCarData.category || parsedCarData.general_info?.["ประเภท"] || "-",
+                    transmission: parsedCarData.transmission || parsedCarData.engine_and_transmission?.["เกียร์"] || "-",
+                    exterior_color: parsedCarData.exterior_color || parsedCarData.general_info?.["สีตัวถัง"] || "-",
+                    interior_color: parsedCarData.interior_color || "-",
+                    mileage: parsedCarData.mileage || parsedCarData.engine_and_transmission?.["เลขไมล์ (กม.)"] || "-",
+                    engine_cc: parsedCarData.engine_cc || parsedCarData.engine_and_transmission?.["ขนาดเครื่องยนต์"] || "-",
+                    fuel_type: parsedCarData.fuel_type || parsedCarData.engine_and_transmission?.["เชื้อเพลิง"] || "-",
+                    seats: parsedCarData.seats || parsedCarData.general_info?.["จำนวนที่นั่ง"] || "-",
+                    price: typeof parsedCarData.price === 'number' ? parsedCarData.price : (parseFloat(parsedCarData.price) || null),
+                    down_payment: typeof parsedCarData.down_payment === 'number' ? parsedCarData.down_payment : (parseFloat(parsedCarData.down_payment) || null),
+                    installment_48: typeof parsedCarData.installment_48 === 'number' ? parsedCarData.installment_48 : (parseFloat(parsedCarData.installment_48) || null),
+                    installment_60: typeof parsedCarData.installment_60 === 'number' ? parsedCarData.installment_60 : (parseFloat(parsedCarData.installment_60) || null),
+                    installment_72: typeof parsedCarData.installment_72 === 'number' ? parsedCarData.installment_72 : (parseFloat(parsedCarData.installment_72) || null),
+                    images: imageUrls,
+                    title: parsedCarData.title || `${parsedCarData.brand || ''} ${parsedCarData.model || ''} ${parsedCarData.year || ''}`.trim(),
+                    raw_spec_text: rawText,
+                    description: parsedCarData.description || parsedCarData.formatted_text || formatCarDataText(parsedCarData),
+                    highlight_options: Array.isArray(parsedCarData.highlight_options) ? parsedCarData.highlight_options : [],
+                    vin: parsedCarData.vin || "-",
+                    engine_number: parsedCarData.engine_number || "-",
+                    status: 'available',
+                    ai_result: parsedCarData,
                     created_at: new Date().toISOString()
                 };
 
@@ -933,19 +1234,216 @@
                     throw new Error("Supabase DB Insert Error: " + dbErr.message);
                 }
 
-                showToast("บันทึกข้อมูลและอัปโหลดรูปภาพเรียบร้อยแล้ว!", "success");
+                showToast("บันทึกข้อมูลและแมปเข้าตาราง Information เรียบร้อยแล้ว!", "success");
                 document.getElementById('nav-status-indicator').innerText = "บันทึกข้อมูลสำเร็จแล้ว";
 
-                // คืนค่าเดิมช่องรายละเอียดสเปกรถยนต์ และรีเซ็ตฟอร์มเข้าสู่สภาพเดิม
+                // Turn off mock demo data when real data is successfully posted!
+                showDemoData = false;
+                updateDemoToggleLabel();
+
                 resetFormAfterSave();
+
+                // Auto switch to Gallery view to show the newly published vehicle!
+                setTimeout(() => {
+                    switchView('gallery');
+                }, 800);
 
             } catch (err) {
                 console.error(err);
                 showToast("เกิดข้อผิดพลาดในการบันทึก: " + err.message, "error");
             } finally {
                 btnSave.disabled = false;
-                btnSave.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-[15px]"></i> <span>บันทึกข้อมูลและอัปโหลดรูปภาพเข้า Supabase</span>`;
+                btnSave.innerHTML = `<i class="fa-solid fa-cloud-arrow-up text-[15px]"></i> <span>บันทึกลง public."Information" ใน Supabase</span>`;
             }
+        }
+
+        async function fetchSupabaseGallery() {
+            const countBadge = document.getElementById('gallery-count-badge');
+            if (countBadge) countBadge.innerText = "กำลังเชื่อมต่อ Supabase...";
+
+            loadedSupabaseCars = [];
+
+            if (config.supabaseUrl && config.supabaseKey) {
+                try {
+                    const { createClient } = supabase;
+                    const supabaseClient = createClient(config.supabaseUrl, config.supabaseKey);
+
+                    const { data, error } = await supabaseClient
+                        .from(config.tableName)
+                        .select('*')
+                        .order('created_at', { ascending: false });
+
+                    if (!error && data) {
+                        loadedSupabaseCars = data;
+                    } else if (error) {
+                        console.warn("Gallery fetch notice:", error.message);
+                    }
+                } catch (e) {
+                    console.warn("Could not query Supabase table:", e.message);
+                }
+            }
+
+            renderGalleryGrid();
+        }
+
+        function toggleDemoData() {
+            showDemoData = !showDemoData;
+            updateDemoToggleLabel();
+            renderGalleryGrid();
+            if (showDemoData) {
+                showToast("เปิดแสดงตัวอย่างรายการ Mock Data แล้ว", "info");
+            } else {
+                showToast("ซ่อนรายการตัวอย่างแล้ว", "info");
+            }
+        }
+
+        function updateDemoToggleLabel() {
+            const lbl = document.getElementById('demo-toggle-label');
+            if (lbl) {
+                lbl.innerText = showDemoData ? "ซ่อนตัวอย่าง Mock Data (2 รายการ)" : "แสดงตัวอย่าง Mock Data (2 รายการ)";
+            }
+        }
+
+        function renderGalleryGrid() {
+            const grid = document.getElementById('gallery-grid');
+            const empty = document.getElementById('gallery-empty-state');
+            const countBadge = document.getElementById('gallery-count-badge');
+            if (!grid) return;
+
+            grid.innerHTML = '';
+
+            let allItems = [];
+            
+            // Combine loaded Supabase real records + Mock Data (if enabled)
+            if (showDemoData) {
+                allItems = [...loadedSupabaseCars, ...MOCK_VEHICLES];
+            } else {
+                allItems = [...loadedSupabaseCars];
+            }
+
+            // Apply Search Filtering
+            const searchVal = (document.getElementById('gallery-search-input')?.value || '').toLowerCase().trim();
+            if (searchVal) {
+                allItems = allItems.filter(item => {
+                    const searchableStr = `${item.title || ''} ${item.brand || ''} ${item.model || ''} ${item.license_plate || ''} ${item.description || ''} ${item.year || ''}`.toLowerCase();
+                    return searchableStr.includes(searchVal);
+                });
+            }
+
+            if (countBadge) {
+                countBadge.innerText = `ทั้งหมด ${allItems.length} รายการ`;
+            }
+
+            if (allItems.length === 0) {
+                empty.classList.remove('hidden');
+                return;
+            } else {
+                empty.classList.add('hidden');
+            }
+
+            allItems.forEach((car) => {
+                const card = document.createElement('div');
+                card.className = "bg-white border border-[#e0e0e0] rounded-[22px] overflow-hidden flex flex-col justify-between apple-active-scale transition-all hover:border-[#0066cc] group";
+
+                const displayImage = (car.images && car.images.length > 0) 
+                    ? car.images[0] 
+                    : 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=800&q=80';
+
+                const formattedPrice = car.price 
+                    ? `฿${Number(car.price).toLocaleString()}` 
+                    : 'ติดต่อสอบถามราคา';
+
+                const formattedInstallment = car.installment_48 
+                    ? `฿${Number(car.installment_48).toLocaleString()}/เดือน` 
+                    : '-';
+
+                card.innerHTML = `
+                    <div>
+                        <!-- Vehicle Cover Image Container with Signature Drop Shadow -->
+                        <div class="relative h-60 bg-[#fafafc] overflow-hidden border-b border-[#f0f0f0]">
+                            <img src="${displayImage}" alt="${car.title}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                            
+                            <!-- Plate Badge -->
+                            <div class="absolute top-3 left-3 bg-[#000000]/70 text-white text-[11px] font-semibold px-3 py-1 rounded-full backdrop-blur-md flex items-center gap-1.5 border border-white/20">
+                                <i class="fa-solid fa-rectangle-ad text-[#34c759]"></i>
+                                <span>${car.license_plate || '-'}</span>
+                            </div>
+
+                            ${car.is_mock ? `
+                                <div class="absolute top-3 right-3 bg-[#ff9500]/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-xs">
+                                    Mock Sample
+                                </div>
+                            ` : `
+                                <div class="absolute top-3 right-3 bg-[#0066cc]/90 text-white text-[10px] font-bold px-2.5 py-0.5 rounded-full backdrop-blur-md shadow-xs">
+                                    Live Supabase
+                                </div>
+                            `}
+                        </div>
+
+                        <!-- Card Content Body -->
+                        <div class="p-6 space-y-4">
+                            <div>
+                                <span class="text-[12px] uppercase tracking-wider text-[#0066cc] font-semibold">${car.brand || 'CAR'}</span>
+                                <h3 class="apple-body-strong text-[20px] text-[#1d1d1f] line-clamp-1 mt-0.5">${car.title || 'รถยนต์พรีเมียม'}</h3>
+                                <p class="apple-caption text-[#7a7a7a] line-clamp-1 mt-1">${car.submodel || car.category || '-'}</p>
+                            </div>
+
+                            <!-- Spec Highlights Chips -->
+                            <div class="flex flex-wrap gap-2 pt-1 text-[12px] text-[#1d1d1f]">
+                                <span class="bg-[#f5f5f7] px-2.5 py-1 rounded-full border border-[#e0e0e0]"><i class="fa-regular fa-calendar text-[#7a7a7a] mr-1"></i>${car.year || '-'}</span>
+                                <span class="bg-[#f5f5f7] px-2.5 py-1 rounded-full border border-[#e0e0e0]"><i class="fa-solid fa-gauge text-[#7a7a7a] mr-1"></i>${car.mileage || '-'} กม.</span>
+                                <span class="bg-[#f5f5f7] px-2.5 py-1 rounded-full border border-[#e0e0e0]"><i class="fa-solid fa-gears text-[#7a7a7a] mr-1"></i>${car.transmission || 'เกียร์'}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card Footer Action Bar -->
+                    <div class="p-6 pt-0 border-t border-[#f0f0f0] mt-4 flex items-center justify-between">
+                        <div>
+                            <p class="apple-caption text-[#7a7a7a] text-[11px]">ราคาเงินสด</p>
+                            <p class="apple-body-strong text-[#0066cc] text-[19px]">${formattedPrice}</p>
+                        </div>
+                        <button onclick='openDetailModal(${JSON.stringify(car).replace(/'/g, "&apos;")})' 
+                                class="px-4 py-2 bg-[#f5f5f7] hover:bg-[#0066cc] hover:text-white text-[#1d1d1f] rounded-full text-[13px] font-medium apple-active-scale transition-colors border border-[#e0e0e0]">
+                            ดูสเปกเต็ม
+                        </button>
+                    </div>
+                `;
+
+                grid.appendChild(card);
+            });
+        }
+
+        function filterGalleryItems() {
+            renderGalleryGrid();
+        }
+
+        function openDetailModal(car) {
+            const modal = document.getElementById('vehicle-detail-modal');
+            
+            document.getElementById('detail-modal-img').src = (car.images && car.images[0]) ? car.images[0] : 'https://images.unsplash.com/photo-1542282088-72c9c27ed0cd?auto=format&fit=crop&w=1200&q=80';
+            document.getElementById('detail-modal-plate').innerText = car.license_plate || '-';
+            document.getElementById('detail-modal-brand').innerText = car.brand || 'VEHICLE';
+            document.getElementById('detail-modal-title').innerText = car.title || 'รายละเอียดรถยนต์';
+            document.getElementById('detail-modal-subtitle').innerText = car.submodel || car.category || '-';
+            
+            document.getElementById('detail-modal-price').innerText = car.price ? `฿${Number(car.price).toLocaleString()}` : 'สอบถามราคา';
+            document.getElementById('detail-modal-year').innerText = car.year || '-';
+            document.getElementById('detail-modal-mileage').innerText = car.mileage ? `${car.mileage} กม.` : '-';
+            document.getElementById('detail-modal-trans').innerText = car.transmission || '-';
+            document.getElementById('detail-modal-fuel').innerText = car.fuel_type || '-';
+
+            document.getElementById('detail-modal-i48').innerText = car.installment_48 ? `฿${Number(car.installment_48).toLocaleString()}` : '-';
+            document.getElementById('detail-modal-i60').innerText = car.installment_60 ? `฿${Number(car.installment_60).toLocaleString()}` : '-';
+            document.getElementById('detail-modal-i72').innerText = car.installment_72 ? `฿${Number(car.installment_72).toLocaleString()}` : '-';
+
+            document.getElementById('detail-modal-desc').innerText = car.description || car.raw_spec_text || 'ไม่มีรายละเอียดเพิ่มเติม';
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeDetailModal() {
+            document.getElementById('vehicle-detail-modal').classList.add('hidden');
         }
 
         function showToast(message, type = "info") {
